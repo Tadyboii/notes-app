@@ -14,62 +14,69 @@ import 'package:hive_flutter/hive_flutter.dart' as _i986;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:uuid/uuid.dart' as _i706;
 
-import '../../features/notes_list/data/datasources/hive_datasource.dart' as _i312;
-import '../../features/notes_list/data/datasources/hive_datasource_impl.dart'
-    as _i203;
-import '../../features/notes_list/data/models/note_model.dart' as _i214;
+import '../../features/notes_list/data/datasources/note_local_datasource.dart'
+    as _i482;
+import '../../features/notes_list/data/datasources/note_local_datasource_impl.dart'
+    as _i370;
+import '../../features/notes_list/data/models/note_model.dart' as _i568;
 import '../../features/notes_list/data/repositories/note_repository_impl.dart'
-    as _i559;
-import '../../features/notes_list/domain/repositories/note_repository.dart' as _i539;
-import '../../features/notes_list/domain/usecases/add_note.dart' as _i760;
-import '../../features/notes_list/domain/usecases/delete_note.dart' as _i567;
-import '../../features/notes_list/domain/usecases/get_all_notes.dart' as _i522;
-import '../../features/notes_list/domain/usecases/update_note.dart' as _i397;
-import '../../features/notes_list/presentation/bloc/note_bloc.dart' as _i895;
-import 'register_module.dart' as _i291;
+    as _i331;
+import '../../features/notes_list/di/note_module.dart' as _i760;
+import '../../features/notes_list/domain/repositories/i_note_repository.dart'
+    as _i425;
+import '../../features/notes_list/domain/usecases/add_note_usecase.dart'
+    as _i194;
+import '../../features/notes_list/domain/usecases/delete_note_usecase.dart'
+    as _i616;
+import '../../features/notes_list/domain/usecases/get_all_notes_usecase.dart'
+    as _i238;
+import '../../features/notes_list/domain/usecases/update_note_usecase.dart'
+    as _i201;
+import '../../features/notes_list/presentation/bloc/note_bloc.dart' as _i851;
+import 'core_module.dart' as _i154;
 
 extension GetItInjectableX on _i174.GetIt {
-  // initializes the registration of main-scope dependencies inside of GetIt
+// initializes the registration of main-scope dependencies inside of GetIt
   Future<_i174.GetIt> init({
     String? environment,
     _i526.EnvironmentFilter? environmentFilter,
   }) async {
-    final gh = _i526.GetItHelper(this, environment, environmentFilter);
-    final registerModule = _$RegisterModule();
-    await gh.singletonAsync<_i986.Box<_i214.NoteModel>>(
-      () => registerModule.notesBox,
+    final gh = _i526.GetItHelper(
+      this,
+      environment,
+      environmentFilter,
+    );
+    final noteModule = _$NoteModule();
+    final coreModule = _$CoreModule();
+    await gh.singletonAsync<_i986.Box<_i568.NoteModel>>(
+      () => noteModule.notesBox,
       preResolve: true,
     );
-    gh.lazySingleton<_i706.Uuid>(() => registerModule.uuid);
-    gh.singleton<_i312.HiveDataSource>(
-      () => _i203.HiveDataSourceImpl(
-        notesBox: gh<_i979.Box<_i214.NoteModel>>(),
-        uuid: gh<_i706.Uuid>(),
-      ),
-    );
-    gh.singleton<_i539.NoteRepository>(
-      () => _i559.NoteRepositoryImpl(gh<_i312.HiveDataSource>()),
-    );
-    gh.factory<_i522.GetAllNotes>(
-      () => _i522.GetAllNotes(gh<_i539.NoteRepository>()),
-    );
-    gh.factory<_i760.AddNote>(() => _i760.AddNote(gh<_i539.NoteRepository>()));
-    gh.factory<_i397.UpdateNote>(
-      () => _i397.UpdateNote(gh<_i539.NoteRepository>()),
-    );
-    gh.factory<_i567.DeleteNote>(
-      () => _i567.DeleteNote(gh<_i539.NoteRepository>()),
-    );
-    gh.factory<_i895.NoteBloc>(
-      () => _i895.NoteBloc(
-        gh<_i522.GetAllNotes>(),
-        gh<_i760.AddNote>(),
-        gh<_i567.DeleteNote>(),
-        gh<_i397.UpdateNote>(),
-      ),
-    );
+    gh.lazySingleton<_i706.Uuid>(() => coreModule.uuid);
+    gh.singleton<_i482.NoteLocalDataSource>(() => _i370.NoteLocalDataSourceImpl(
+          notesBox: gh<_i979.Box<_i568.NoteModel>>(),
+          uuid: gh<_i706.Uuid>(),
+        ));
+    gh.singleton<_i425.INoteRepository>(
+        () => _i331.NoteRepositoryImpl(gh<_i482.NoteLocalDataSource>()));
+    gh.factory<_i201.UpdateNoteUseCase>(
+        () => _i201.UpdateNoteUseCase(gh<_i425.INoteRepository>()));
+    gh.factory<_i616.DeleteNoteUseCase>(
+        () => _i616.DeleteNoteUseCase(gh<_i425.INoteRepository>()));
+    gh.factory<_i194.AddNoteUseCase>(
+        () => _i194.AddNoteUseCase(gh<_i425.INoteRepository>()));
+    gh.factory<_i238.GetAllNotesUseCase>(
+        () => _i238.GetAllNotesUseCase(gh<_i425.INoteRepository>()));
+    gh.factory<_i851.NoteBloc>(() => _i851.NoteBloc(
+          gh<_i238.GetAllNotesUseCase>(),
+          gh<_i194.AddNoteUseCase>(),
+          gh<_i616.DeleteNoteUseCase>(),
+          gh<_i201.UpdateNoteUseCase>(),
+        ));
     return this;
   }
 }
 
-class _$RegisterModule extends _i291.RegisterModule {}
+class _$NoteModule extends _i760.NoteModule {}
+
+class _$CoreModule extends _i154.CoreModule {}

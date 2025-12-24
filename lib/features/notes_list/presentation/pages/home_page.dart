@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
-import 'package:notes_app/features/notes_list/presentation/widget/note_tile.dart';
+import 'package:notes_app/features/notes_list/presentation/widget/note_tile_widget.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -45,7 +45,7 @@ class HomePage extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 itemCount: state.notes.length,
                 itemBuilder: (_, i) {
-                  return NoteTile(
+                  return NoteTileWidget(
                     note: state.notes[i],
                     onDelete: () {
                       context.read<NoteBloc>().add(

@@ -2,7 +2,7 @@ import 'package:notes_app/core/error/failures.dart';
 import 'package:notes_app/core/result/result.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 
-abstract class NoteRepository {
+abstract class INoteRepository {
   Future<Result<List<Note>, Failure>> getAllNotes();
 
   Future<Result<void, Failure>> addNote(Note note);
