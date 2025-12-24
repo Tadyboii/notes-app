@@ -51,10 +51,4 @@ app.*.map.json
 # Ignore generated json_serializable files
 **/*.g.dart
 
-/lib/app
-/lib/core
-/lib/features
-/lib/bootstrap.dart
-/lib/main_development.dart
-
 /test/
