@@ -5,10 +5,10 @@ import 'package:notes_app/core/error/failures.dart';
 import 'package:notes_app/core/result/result.dart';
 import 'package:notes_app/core/usecase/usecase.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
-import 'package:notes_app/features/notes_list/domain/usecases/add_note.dart';
-import 'package:notes_app/features/notes_list/domain/usecases/delete_note.dart';
-import 'package:notes_app/features/notes_list/domain/usecases/get_all_notes.dart';
-import 'package:notes_app/features/notes_list/domain/usecases/update_note.dart';
+import 'package:notes_app/features/notes_list/domain/usecases/add_note_usecase.dart';
+import 'package:notes_app/features/notes_list/domain/usecases/delete_note_usecase.dart';
+import 'package:notes_app/features/notes_list/domain/usecases/get_all_notes_usecase.dart';
+import 'package:notes_app/features/notes_list/domain/usecases/update_note_usecase.dart';
 
 part 'note_bloc.freezed.dart';
 part 'note_event.dart';
@@ -36,10 +36,10 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       }
     });
   }
-  final GetAllNotes getAllNotesUseCase;
-  final AddNote addNoteUseCase;
-  final DeleteNote deleteNoteUseCase;
-  final UpdateNote updateNoteUseCase;
+  final GetAllNotesUseCase getAllNotesUseCase;
+  final AddNoteUseCase addNoteUseCase;
+  final DeleteNoteUseCase deleteNoteUseCase;
+  final UpdateNoteUseCase updateNoteUseCase;
 
   Future<void> _getAllNotes(Emitter<NoteState> emit) async {
     emit(state.copyWith(isLoading: true, errorMessage: null));
