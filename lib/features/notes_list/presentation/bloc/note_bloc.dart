@@ -16,10 +16,6 @@ part 'note_state.dart';
 
 @injectable
 class NoteBloc extends Bloc<NoteEvent, NoteState> {
-  final GetAllNotes getAllNotesUseCase;
-  final AddNote addNoteUseCase;
-  final DeleteNote deleteNoteUseCase;
-  final UpdateNote updateNoteUseCase;
 
   NoteBloc(
     this.getAllNotesUseCase,
@@ -31,32 +27,30 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       switch (event) {
         case _GetAllNotes():
           await _getAllNotes(emit);
-          break;
         case _AddNote(:final note):
           await _addNote(note, emit);
-          break;
         case _UpdateNote(:final note):
           await _updateNote(note, emit);
-          break;
         case _DeleteNote(:final id):
           await _deleteNote(id, emit);
-          break;
       }
     });
   }
+  final GetAllNotes getAllNotesUseCase;
+  final AddNote addNoteUseCase;
+  final DeleteNote deleteNoteUseCase;
+  final UpdateNote updateNoteUseCase;
 
   Future<void> _getAllNotes(Emitter<NoteState> emit) async {
     emit(state.copyWith(isLoading: true, errorMessage: null));
 
-    final result = await getAllNotesUseCase(NoParams());
+    final result = await getAllNotesUseCase(const NoParams());
     switch (result) {
       case ResultSuccess<List<Note>, Failure>(:final value):
         emit(state.copyWith(notes: value, isLoading: false));
-        break;
 
       case ResultFailure<List<Note>, Failure>(:final failure):
         emit(state.copyWith(isLoading: false, errorMessage: failure.message));
-        break;
     }
   }
 
@@ -65,11 +59,9 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     switch (result) {
       case ResultSuccess<void, Failure>():
         add(const NoteEvent.getAllNotes());
-        break;
 
       case ResultFailure<void, Failure>(:final failure):
         emit(state.copyWith(errorMessage: failure.message));
-        break;
     }
   }
 
@@ -78,10 +70,8 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     switch (result) {
       case ResultSuccess<void, Failure>():
         add(const NoteEvent.getAllNotes());
-        break;
       case ResultFailure<void, Failure>(:final failure):
         emit(state.copyWith(errorMessage: failure.message));
-        break;
     }
   }
 
@@ -90,10 +80,8 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     switch (result) {
       case ResultSuccess<void, Failure>():
         add(const NoteEvent.getAllNotes());
-        break;
       case ResultFailure<void, Failure>(:final failure):
         emit(state.copyWith(errorMessage: failure.message));
-        break;
     }
   }
 }

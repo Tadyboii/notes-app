@@ -8,9 +8,9 @@ import 'package:notes_app/features/notes_list/domain/repositories/note_repositor
 
 @Singleton(as: NoteRepository)
 class NoteRepositoryImpl implements NoteRepository {
-  final HiveDataSource hiveDatasource;
 
   NoteRepositoryImpl(this.hiveDatasource);
+  final HiveDataSource hiveDatasource;
 
   @override
   Future<Result<List<Note>, Failure>> getAllNotes() async {
@@ -28,7 +28,7 @@ class NoteRepositoryImpl implements NoteRepository {
     try {
       final noteModel = note.toModel();
       await hiveDatasource.addNote(noteModel);
-      return Result(null);
+      return const Result(null);
     } catch (e) {
       return Result.failure(UnexpectedFailure(e.toString()));
     }
@@ -38,7 +38,7 @@ class NoteRepositoryImpl implements NoteRepository {
   Future<Result<void, Failure>> deleteNote(String id) async {
     try {
       await hiveDatasource.deleteNote(id);
-      return Result(null);
+      return const Result(null);
     } catch (e) {
       return Result.failure(UnexpectedFailure(e.toString()));
     }
@@ -49,7 +49,7 @@ class NoteRepositoryImpl implements NoteRepository {
     try {
       final noteModel = note.toModel();
       await hiveDatasource.updateNote(noteModel);
-      return Result(null);
+      return const Result(null);
     } catch (e) {
       return Result.failure(UnexpectedFailure(e.toString()));
     }

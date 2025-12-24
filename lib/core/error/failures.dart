@@ -3,29 +3,29 @@ abstract class Failure {
 }
 
 class NotConnectedToInternetError implements Failure {
-  @override
-  final String message;
 
   NotConnectedToInternetError({this.message = 'Not connected to the internet'});
+  @override
+  final String message;
 }
 
 class APITimeoutError implements Failure {
-  @override
-  final String message;
 
   APITimeoutError({this.message = 'API Timeout Error'});
+  @override
+  final String message;
 }
 
 class ServerFailure implements Failure {
-  @override
-  final String message;
 
   ServerFailure(this.message);
+  @override
+  final String message;
 }
 
 class UnexpectedFailure implements Failure {
-  @override
-  final String message;
 
   UnexpectedFailure(this.message);
+  @override
+  final String message;
 }

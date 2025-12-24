@@ -7,12 +7,12 @@ import 'package:notes_app/features/notes_list/domain/repositories/note_repositor
 
 @injectable
 class AddNote implements UseCase<void, Note> {
-  final NoteRepository repository;
 
   const AddNote(this.repository);
+  final NoteRepository repository;
 
   @override
   Future<Result<void, Failure>> call(Note note) async {
-    return await repository.addNote(note);
+    return repository.addNote(note);
   }
 }
