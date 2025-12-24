@@ -7,12 +7,12 @@ import 'package:notes_app/features/notes_list/domain/repositories/note_repositor
 
 @injectable
 class GetAllNotes implements UseCase<List<Note>, NoParams> {
-  final NoteRepository repository;
 
   const GetAllNotes(this.repository);
+  final NoteRepository repository;
 
   @override
   Future<Result<List<Note>, Failure>> call(NoParams params) async {
-    return await repository.getAllNotes();
+    return repository.getAllNotes();
   }
 }

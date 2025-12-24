@@ -5,8 +5,6 @@ part 'note.freezed.dart';
 @freezed
 abstract class Note with _$Note {
   const factory Note({
-    String? id,
-    required String title,
-    required String content,
+    required String title, required String content, String? id,
   }) = _Note;
 }

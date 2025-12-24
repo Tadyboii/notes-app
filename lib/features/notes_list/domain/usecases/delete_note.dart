@@ -6,12 +6,12 @@ import 'package:notes_app/features/notes_list/domain/repositories/note_repositor
 
 @injectable
 class DeleteNote implements UseCase<void, String> {
-  final NoteRepository repository;
 
   const DeleteNote(this.repository);
+  final NoteRepository repository;
 
   @override
   Future<Result<void, Failure>> call(String id) async {
-    return await repository.deleteNote(id);
+    return repository.deleteNote(id);
   }
 }
