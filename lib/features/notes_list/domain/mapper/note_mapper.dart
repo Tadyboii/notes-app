@@ -3,12 +3,24 @@ import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 
 extension NoteMapper on NoteModel {
   Note toDomain() {
-    return Note(id: id, title: title, content: content);
+    return Note(
+      id: id,
+      title: title,
+      content: content,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
   }
 }
 
 extension NoteModelMapper on Note {
   NoteModel toModel() {
-    return NoteModel(id: id ?? '', title: title, content: content);
+    return NoteModel(
+      id: id ?? '',
+      title: title,
+      content: content,
+      createdAt: createdAt ?? DateTime.now(),
+      updatedAt: updatedAt ?? DateTime.now()
+    );
   }
 }

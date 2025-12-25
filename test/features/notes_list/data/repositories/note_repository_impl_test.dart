@@ -15,13 +15,17 @@ void main() {
   late NoteRepositoryImpl repository;
   late MockNoteLocalDataSource mockDataSource;
 
+  final now = DateTime.now();
+
   setUpAll(() {
     // Register fallback values for custom types
     registerFallbackValue(
-      const NoteModel(
+      NoteModel(
         id: '',
         title: '',
         content: '',
+        createdAt: now,
+        updatedAt: now,
       ),
     );
   });
@@ -34,72 +38,69 @@ void main() {
   group('NoteRepositoryImpl', () {
     group('getAllNotes', () {
       final testModels = [
-        const NoteModel(
+        NoteModel(
           id: '1',
           title: 'Test Note 1',
           content: 'Content 1',
+          createdAt: now,
+          updatedAt: now,
         ),
-        const NoteModel(
+        NoteModel(
           id: '2',
           title: 'Test Note 2',
           content: 'Content 2',
+          createdAt: now,
+          updatedAt: now,
         ),
       ];
 
       final testNotes = [
-        const Note(
+        Note(
           id: '1',
           title: 'Test Note 1',
           content: 'Content 1',
+          createdAt: now,
+          updatedAt: now,
         ),
-        const Note(
+        Note(
           id: '2',
           title: 'Test Note 2',
           content: 'Content 2',
+          createdAt: now,
+          updatedAt: now,
         ),
       ];
 
       test(
         'returns success with mapped Note entities when call succeeds',
-        () async {
-          // Arrange
-          when(
-            () => mockDataSource.getAllNotes(),
-          ).thenAnswer((_) async => testModels);
+            () async {
+          when(() => mockDataSource.getAllNotes())
+              .thenAnswer((_) async => testModels);
 
-          // Act
           final result = await repository.getAllNotes();
 
-          // Assert
           expect(result, equals(Result<List<Note>, Failure>(testNotes)));
           verify(() => mockDataSource.getAllNotes()).called(1);
         },
       );
 
       test('returns success with empty list when no notes exist', () async {
-        // Arrange
         when(() => mockDataSource.getAllNotes()).thenAnswer((_) async => []);
 
-        // Act
         final result = await repository.getAllNotes();
 
-        // Assert
-        expect(result, equals(const Result<List<Note>, Failure>([])));
+        expect(result, equals(Result<List<Note>, Failure>([])));
         verify(() => mockDataSource.getAllNotes()).called(1);
       });
 
       test(
         'returns UnexpectedFailure when data source throws CacheException',
-        () async {
-          // Arrange
-          when(
-            () => mockDataSource.getAllNotes(),
-          ).thenThrow(const CacheException('Failed to load notes'));
+            () async {
+          when(() => mockDataSource.getAllNotes())
+              .thenThrow(const CacheException('Failed to load notes'));
 
-          // Act
           final result = await repository.getAllNotes();
 
-          // Assert
           expect(result, isA<ResultFailure<List<Note>, Failure>>());
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<UnexpectedFailure>());
@@ -111,16 +112,12 @@ void main() {
 
       test(
         'returns UnexpectedFailure when data source throws generic exception',
-        () async {
-          // Arrange
-          when(
-            () => mockDataSource.getAllNotes(),
-          ).thenThrow(Exception('Unexpected error'));
+            () async {
+          when(() => mockDataSource.getAllNotes())
+              .thenThrow(Exception('Unexpected error'));
 
-          // Act
           final result = await repository.getAllNotes();
 
-          // Assert
           expect(result, isA<ResultFailure<List<Note>, Failure>>());
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<UnexpectedFailure>());
@@ -132,56 +129,48 @@ void main() {
     });
 
     group('addNote', () {
-      const testNote = Note(
+      final testNote = Note(
         id: '1',
         title: 'New Note',
         content: 'New Content',
+        createdAt: now,
+        updatedAt: now,
       );
 
       test('returns success when note is added successfully', () async {
-        // Arrange
-        when(
-          () => mockDataSource.addNote(any()),
-        ).thenAnswer((_) async => Future.value());
+        when(() => mockDataSource.addNote(any()))
+            .thenAnswer((_) async => Future.value());
 
-        // Act
         final result = await repository.addNote(testNote);
 
-        // Assert
         expect(result, equals(const Result<void, Failure>(null)));
         verify(() => mockDataSource.addNote(any())).called(1);
       });
 
       test('calls data source with correct NoteModel', () async {
-        // Arrange
-        const expectedModel = NoteModel(
+        final expectedModel = NoteModel(
           id: '1',
           title: 'New Note',
           content: 'New Content',
+          createdAt: now,
+          updatedAt: now,
         );
-        when(
-          () => mockDataSource.addNote(any()),
-        ).thenAnswer((_) async => Future.value());
+        when(() => mockDataSource.addNote(any()))
+            .thenAnswer((_) async => Future.value());
 
-        // Act
         await repository.addNote(testNote);
 
-        // Assert
         verify(() => mockDataSource.addNote(expectedModel)).called(1);
       });
 
       test(
         'returns UnexpectedFailure when data source throws CacheException',
-        () async {
-          // Arrange
-          when(
-            () => mockDataSource.addNote(any()),
-          ).thenThrow(const CacheException('Failed to save note'));
+            () async {
+          when(() => mockDataSource.addNote(any()))
+              .thenThrow(const CacheException('Failed to save note'));
 
-          // Act
           final result = await repository.addNote(testNote);
 
-          // Assert
           expect(result, isA<ResultFailure<void, Failure>>());
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<UnexpectedFailure>());
@@ -193,16 +182,12 @@ void main() {
 
       test(
         'returns UnexpectedFailure when data source throws generic exception',
-        () async {
-          // Arrange
-          when(
-            () => mockDataSource.addNote(any()),
-          ).thenThrow(Exception('Unexpected error'));
+            () async {
+          when(() => mockDataSource.addNote(any()))
+              .thenThrow(Exception('Unexpected error'));
 
-          // Act
           final result = await repository.addNote(testNote);
 
-          // Assert
           expect(result, isA<ResultFailure<void, Failure>>());
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<UnexpectedFailure>());
@@ -213,56 +198,48 @@ void main() {
     });
 
     group('updateNote', () {
-      const testNote = Note(
+      final testNote = Note(
         id: '1',
         title: 'Updated Note',
         content: 'Updated Content',
+        createdAt: now,
+        updatedAt: now,
       );
 
       test('returns success when note is updated successfully', () async {
-        // Arrange
-        when(
-          () => mockDataSource.updateNote(any()),
-        ).thenAnswer((_) async => Future.value());
+        when(() => mockDataSource.updateNote(any()))
+            .thenAnswer((_) async => Future.value());
 
-        // Act
         final result = await repository.updateNote(testNote);
 
-        // Assert
         expect(result, equals(const Result<void, Failure>(null)));
         verify(() => mockDataSource.updateNote(any())).called(1);
       });
 
       test('calls data source with correct NoteModel', () async {
-        // Arrange
-        const expectedModel = NoteModel(
+        final expectedModel = NoteModel(
           id: '1',
           title: 'Updated Note',
           content: 'Updated Content',
+          createdAt: now,
+          updatedAt: now,
         );
-        when(
-          () => mockDataSource.updateNote(any()),
-        ).thenAnswer((_) async => Future.value());
+        when(() => mockDataSource.updateNote(any()))
+            .thenAnswer((_) async => Future.value());
 
-        // Act
         await repository.updateNote(testNote);
 
-        // Assert
         verify(() => mockDataSource.updateNote(expectedModel)).called(1);
       });
 
       test(
         'returns UnexpectedFailure when data source throws CacheException',
-        () async {
-          // Arrange
-          when(
-            () => mockDataSource.updateNote(any()),
-          ).thenThrow(const CacheException('Failed to update note'));
+            () async {
+          when(() => mockDataSource.updateNote(any()))
+              .thenThrow(const CacheException('Failed to update note'));
 
-          // Act
           final result = await repository.updateNote(testNote);
 
-          // Assert
           expect(result, isA<ResultFailure<void, Failure>>());
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<UnexpectedFailure>());
@@ -274,16 +251,12 @@ void main() {
 
       test(
         'returns UnexpectedFailure when data source throws generic exception',
-        () async {
-          // Arrange
-          when(
-            () => mockDataSource.updateNote(any()),
-          ).thenThrow(Exception('Unexpected error'));
+            () async {
+          when(() => mockDataSource.updateNote(any()))
+              .thenThrow(Exception('Unexpected error'));
 
-          // Act
           final result = await repository.updateNote(testNote);
 
-          // Assert
           expect(result, isA<ResultFailure<void, Failure>>());
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<UnexpectedFailure>());
@@ -297,44 +270,32 @@ void main() {
       const testNoteId = '1';
 
       test('returns success when note is deleted successfully', () async {
-        // Arrange
-        when(
-          () => mockDataSource.deleteNote(any()),
-        ).thenAnswer((_) async => Future.value());
+        when(() => mockDataSource.deleteNote(any()))
+            .thenAnswer((_) async => Future.value());
 
-        // Act
         final result = await repository.deleteNote(testNoteId);
 
-        // Assert
         expect(result, equals(const Result<void, Failure>(null)));
         verify(() => mockDataSource.deleteNote(testNoteId)).called(1);
       });
 
       test('calls data source with correct note id', () async {
-        // Arrange
-        when(
-          () => mockDataSource.deleteNote(any()),
-        ).thenAnswer((_) async => Future.value());
+        when(() => mockDataSource.deleteNote(any()))
+            .thenAnswer((_) async => Future.value());
 
-        // Act
         await repository.deleteNote(testNoteId);
 
-        // Assert
         verify(() => mockDataSource.deleteNote(testNoteId)).called(1);
       });
 
       test(
         'returns UnexpectedFailure when data source throws CacheException',
-        () async {
-          // Arrange
-          when(
-            () => mockDataSource.deleteNote(any()),
-          ).thenThrow(const CacheException('Failed to delete note'));
+            () async {
+          when(() => mockDataSource.deleteNote(any()))
+              .thenThrow(const CacheException('Failed to delete note'));
 
-          // Act
           final result = await repository.deleteNote(testNoteId);
 
-          // Assert
           expect(result, isA<ResultFailure<void, Failure>>());
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<UnexpectedFailure>());
@@ -346,16 +307,12 @@ void main() {
 
       test(
         'returns UnexpectedFailure when data source throws generic exception',
-        () async {
-          // Arrange
-          when(
-            () => mockDataSource.deleteNote(any()),
-          ).thenThrow(Exception('Unexpected error'));
+            () async {
+          when(() => mockDataSource.deleteNote(any()))
+              .thenThrow(Exception('Unexpected error'));
 
-          // Act
           final result = await repository.deleteNote(testNoteId);
 
-          // Assert
           expect(result, isA<ResultFailure<void, Failure>>());
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<UnexpectedFailure>());

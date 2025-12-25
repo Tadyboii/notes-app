@@ -6,8 +6,8 @@ import 'package:uuid/uuid.dart';
 
 @Singleton(as: NoteLocalDataSource)
 class NoteLocalDataSourceImpl extends NoteLocalDataSource {
-
   NoteLocalDataSourceImpl({required this.notesBox, required this.uuid});
+
   final Box<NoteModel> notesBox;
   final Uuid uuid;
 
