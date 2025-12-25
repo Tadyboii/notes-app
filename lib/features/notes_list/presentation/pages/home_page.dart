@@ -47,31 +47,33 @@ class _NoteListView extends StatelessWidget {
               child: Text(
                 'No notes available',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color:
-                  Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             );
           }
-
           return RefreshIndicator(
             color: Theme.of(context).colorScheme.primary,
             onRefresh: () async {
-              context
-                  .read<NoteBloc>()
-                  .add(const NoteEvent.getAllNotes());
+              context.read<NoteBloc>().add(const NoteEvent.getAllNotes());
             },
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: state.notes.length,
               itemBuilder: (_, i) {
-                final note = state.notes[i];
+                final sortedNotes = List<Note>.from(
+                  state.notes,
+                )
+                ..sort(
+                  (a, b) => b.updatedAt!.compareTo(a.updatedAt!),
+                );
+                final note = sortedNotes[i];
                 return NoteTileWidget(
                   note: note,
                   onDelete: () {
-                    context
-                        .read<NoteBloc>()
-                        .add(NoteEvent.deleteNote(note.id!));
+                    context.read<NoteBloc>().add(
+                      NoteEvent.deleteNote(note.id!),
+                    );
                   },
                   onTap: () => _openNoteDialog(context, note),
                 );
