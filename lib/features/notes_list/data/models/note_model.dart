@@ -11,6 +11,8 @@ class NoteModel with _$NoteModel {
     @HiveField(0) required String id,
     @HiveField(1) required String title,
     @HiveField(2) required String content,
+    @HiveField(3) required DateTime createdAt,
+    @HiveField(4) required DateTime updatedAt,
   }) = _NoteModel;
 
   factory NoteModel.fromJson(Map<String, dynamic> json) =>

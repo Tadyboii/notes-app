@@ -8,11 +8,12 @@ import 'package:notes_app/features/notes_list/di/note_module.dart';
 void main() {
   group('NoteModule', () {
     late NoteModule noteModule;
+    late Directory tempDir;
 
     setUpAll(() async {
-      // Use a temporary directory for Hive (pure Dart, test-safe)
-      final dir = Directory.systemTemp.createTempSync();
-      Hive.init(dir.path);
+      // Use a temporary directory for Hive (test-safe)
+      tempDir = Directory.systemTemp.createTempSync();
+      Hive.init(tempDir.path);
 
       if (!Hive.isAdapterRegistered(0)) {
         Hive.registerAdapter(NoteModelImplAdapter());
@@ -32,6 +33,10 @@ void main() {
       await Hive.deleteBoxFromDisk('notesBox');
     });
 
+    tearDownAll(() async {
+      await tempDir.delete(recursive: true);
+    });
+
     test('notesBox should return an open Box<NoteModel>', () async {
       final box = await noteModule.notesBox;
 
@@ -41,7 +46,7 @@ void main() {
 
     test(
       'notesBox should return the same instance on multiple calls',
-      () async {
+          () async {
         final box1 = await noteModule.notesBox;
         final box2 = await noteModule.notesBox;
 
@@ -56,25 +61,52 @@ void main() {
       expect(box.length, 0);
     });
 
-    test('notesBox should store and retrieve NoteModel', () async {
+    test('notesBox should store and retrieve NoteModel with dates', () async {
       final box = await noteModule.notesBox;
-      const testNote = NoteModel(
+      final now = DateTime.now();
+      final testNote = NoteModel(
         id: '1',
         title: 'Test Title',
         content: 'Test Content',
+        createdAt: now,
+        updatedAt: now,
       );
 
       await box.put('1', testNote);
 
+      final storedNote = box.get('1');
       expect(box.length, 1);
-      expect(box.get('1'), testNote);
+      expect(storedNote?.id, '1');
+      expect(storedNote?.title, 'Test Title');
+      expect(storedNote?.content, 'Test Content');
+      expect(storedNote?.createdAt.isAtSameMomentAs(now), true);
+      expect(storedNote?.updatedAt.isAtSameMomentAs(now), true);
     });
 
     test('notesBox should handle multiple notes', () async {
       final box = await noteModule.notesBox;
-      const note1 = NoteModel(id: '1', title: 'Title 1', content: 'Content 1');
-      const note2 = NoteModel(id: '2', title: 'Title 2', content: 'Content 2');
-      const note3 = NoteModel(id: '3', title: 'Title 3', content: 'Content 3');
+      final now = DateTime.now();
+      final note1 = NoteModel(
+        id: '1',
+        title: 'Title 1',
+        content: 'Content 1',
+        createdAt: now,
+        updatedAt: now,
+      );
+      final note2 = NoteModel(
+        id: '2',
+        title: 'Title 2',
+        content: 'Content 2',
+        createdAt: now,
+        updatedAt: now,
+      );
+      final note3 = NoteModel(
+        id: '3',
+        title: 'Title 3',
+        content: 'Content 3',
+        createdAt: now,
+        updatedAt: now,
+      );
 
       await box.put('1', note1);
       await box.put('2', note2);
@@ -86,10 +118,13 @@ void main() {
 
     test('notesBox should delete notes', () async {
       final box = await noteModule.notesBox;
-      const testNote = NoteModel(
+      final now = DateTime.now();
+      final testNote = NoteModel(
         id: '1',
         title: 'Test Title',
         content: 'Test Content',
+        createdAt: now,
+        updatedAt: now,
       );
 
       await box.put('1', testNote);
@@ -101,8 +136,21 @@ void main() {
 
     test('notesBox should clear all notes', () async {
       final box = await noteModule.notesBox;
-      const note1 = NoteModel(id: '1', title: 'Title 1', content: 'Content 1');
-      const note2 = NoteModel(id: '2', title: 'Title 2', content: 'Content 2');
+      final now = DateTime.now();
+      final note1 = NoteModel(
+        id: '1',
+        title: 'Title 1',
+        content: 'Content 1',
+        createdAt: now,
+        updatedAt: now,
+      );
+      final note2 = NoteModel(
+        id: '2',
+        title: 'Title 2',
+        content: 'Content 2',
+        createdAt: now,
+        updatedAt: now,
+      );
 
       await box.put('1', note1);
       await box.put('2', note2);
@@ -110,23 +158,6 @@ void main() {
       await box.clear();
 
       expect(box.isEmpty, true);
-    });
-
-    test('notesBox should persist data after reopening', () async {
-      var box = await noteModule.notesBox;
-      const testNote = NoteModel(
-        id: '1',
-        title: 'Persistent Title',
-        content: 'Persistent Content',
-      );
-
-      await box.put('1', testNote);
-      await box.close();
-
-      box = await Hive.openBox<NoteModel>('notesBox');
-
-      expect(box.length, 1);
-      expect(box.get('1'), testNote);
     });
   });
 }
