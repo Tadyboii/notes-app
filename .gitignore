@@ -50,7 +50,5 @@ app.*.map.json
 # Ignore generated json_serializable files
 **/*.g.dart
 
-/test/
-
 # FVM Version Cache
 .fvm/
