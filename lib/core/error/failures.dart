@@ -1,31 +1,30 @@
-abstract class Failure {
-  String get message;
-}
+import 'package:equatable/equatable.dart';
 
-class NotConnectedToInternetError implements Failure {
+abstract class Failure extends Equatable{
+  const Failure({this.message});
+  final String? message;
 
-  NotConnectedToInternetError({this.message = 'Not connected to the internet'});
   @override
-  final String message;
+  List<Object?> get props => [message];
 }
 
-class APITimeoutError implements Failure {
+class ServerFailure extends Failure {
+  const ServerFailure({super.message, this.statusCode});
+  final int? statusCode;
 
-  APITimeoutError({this.message = 'API Timeout Error'});
   @override
-  final String message;
+  List<Object?> get props => [message, statusCode];
 }
 
-class ServerFailure implements Failure {
-
-  ServerFailure(this.message);
-  @override
-  final String message;
+class CacheFailure extends Failure {
+  const CacheFailure({super.message = 'Cache Error'});
 }
 
-class UnexpectedFailure implements Failure {
-
-  UnexpectedFailure(this.message);
-  @override
-  final String message;
+class NetworkFailure extends Failure {
+  const NetworkFailure({super.message = 'No Internet Connection'});
 }
+
+class UnexpectedFailure extends Failure {
+  const UnexpectedFailure({super.message});
+}
+

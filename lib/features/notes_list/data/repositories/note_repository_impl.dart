@@ -19,7 +19,7 @@ class NoteRepositoryImpl implements INoteRepository {
       final noteEntities = notes.map((note) => note.toDomain()).toList();
       return Result(noteEntities);
     } catch (e) {
-      return Result.failure(UnexpectedFailure(e.toString()));
+      return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
 
@@ -30,7 +30,7 @@ class NoteRepositoryImpl implements INoteRepository {
       await noteLocalDatasource.addNote(noteModel);
       return const Result(null);
     } catch (e) {
-      return Result.failure(UnexpectedFailure(e.toString()));
+      return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
 
@@ -40,7 +40,7 @@ class NoteRepositoryImpl implements INoteRepository {
       await noteLocalDatasource.deleteNote(id);
       return const Result(null);
     } catch (e) {
-      return Result.failure(UnexpectedFailure(e.toString()));
+      return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
 
@@ -51,7 +51,7 @@ class NoteRepositoryImpl implements INoteRepository {
       await noteLocalDatasource.updateNote(noteModel);
       return const Result(null);
     } catch (e) {
-      return Result.failure(UnexpectedFailure(e.toString()));
+      return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
 }
