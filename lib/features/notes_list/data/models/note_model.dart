@@ -6,7 +6,7 @@ part 'note_model.g.dart';
 
 @freezed
 class NoteModel with _$NoteModel {
-  @HiveType(typeId: 0)
+  @HiveType(typeId: 0, adapterName: 'NoteModelAdapter')
   const factory NoteModel({
     @HiveField(0) required String id,
     @HiveField(1) required String title,
