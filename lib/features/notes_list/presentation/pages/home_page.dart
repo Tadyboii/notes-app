@@ -25,19 +25,39 @@ class _NoteListView extends StatefulWidget {
 
 class _NoteListViewState extends State<_NoteListView> {
   String _searchQuery = '';
+  String _lastSearchQuery = '';
+  List<Note>? _lastNotes;
+  List<Note>? _lastFilteredNotes;
 
   List<Note> _filterNotes(List<Note> notes) {
-    if (_searchQuery.isEmpty) return notes;
+    // Return cached results if the input list and query haven't changed.
+    if (identical(notes, _lastNotes) &&
+        _searchQuery == _lastSearchQuery &&
+        _lastFilteredNotes != null) {
+      return _lastFilteredNotes!;
+    }
 
-    return notes.where((note) {
-      final titleMatch = note.title.toLowerCase().contains(
-        _searchQuery.toLowerCase(),
-      );
-      final contentMatch = note.content.toLowerCase().contains(
-        _searchQuery.toLowerCase(),
-      );
+    if (_searchQuery.isEmpty) {
+      _lastNotes = notes;
+      _lastSearchQuery = _searchQuery;
+      _lastFilteredNotes = notes;
+      return notes;
+    }
+
+    final queryLower = _searchQuery.toLowerCase();
+    final filtered = notes.where((note) {
+      final titleLower = note.title.toLowerCase();
+      final contentLower = note.content.toLowerCase();
+      final titleMatch = titleLower.contains(queryLower);
+      final contentMatch = contentLower.contains(queryLower);
       return titleMatch || contentMatch;
     }).toList();
+
+    _lastNotes = notes;
+    _lastSearchQuery = _searchQuery;
+    _lastFilteredNotes = filtered;
+
+    return filtered;
   }
 
   @override
