@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
-import 'package:notes_app/features/notes_list/presentation/widget/note_dialog_widget.dart';
+import 'package:notes_app/features/notes_list/presentation/widget/note_search_bar_widget.dart';
 import 'package:notes_app/features/notes_list/presentation/widget/note_tile_widget.dart';
 
 class HomePage extends StatelessWidget {
@@ -14,88 +16,167 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _NoteListView extends StatelessWidget {
+class _NoteListView extends StatefulWidget {
   const _NoteListView();
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notes'),
-        centerTitle: false,
-      ),
-      body: BlocBuilder<NoteBloc, NoteState>(
-        builder: (context, state) {
-          // if (state.isLoading) {
-          //   return Center(
-          //     child: CircularProgressIndicator(
-          //       color: Theme.of(context).colorScheme.primary,
-          //     ),
-          //   );
-          // }
-          if (state.errorMessage != null) {
-            return Center(
-              child: Text(
-                'Error: ${state.errorMessage}',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            );
-          }
+  State<_NoteListView> createState() => _NoteListViewState();
+}
 
-          if (state.notes.isEmpty) {
-            return Center(
-              child: Text(
-                'No notes available',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            );
-          }
-          return RefreshIndicator(
-            color: Theme.of(context).colorScheme.primary,
-            onRefresh: () async {
-              context.read<NoteBloc>().add(const NoteEvent.getAllNotes());
-            },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: state.notes.length,
-              itemBuilder: (_, i) {
-                final sortedNotes =
-                    List<Note>.from(
-                      state.notes,
-                    )..sort(
-                      (a, b) => b.updatedAt!.compareTo(a.updatedAt!),
-                    );
-                final note = sortedNotes[i];
-                return NoteTileWidget(
-                  note: note,
-                  onDelete: () {
-                    context.read<NoteBloc>().add(
-                      NoteEvent.deleteNote(note.id!),
-                    );
-                  },
-                  onTap: () => _openNoteDialog(context, note),
-                );
+class _NoteListViewState extends State<_NoteListView> {
+  String _searchQuery = '';
+
+  List<Note> _filterNotes(List<Note> notes) {
+    if (_searchQuery.isEmpty) return notes;
+
+    return notes.where((note) {
+      final titleMatch = note.title.toLowerCase().contains(
+        _searchQuery.toLowerCase(),
+      );
+      final contentMatch = note.content.toLowerCase().contains(
+        _searchQuery.toLowerCase(),
+      );
+      return titleMatch || contentMatch;
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Notes'),
+          centerTitle: false,
+        ),
+        body: Column(
+          children: [
+            NoteSearchBarWidget(
+              onSearchChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
               },
             ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openNoteDialog(context),
-        child: const Icon(Icons.add),
+            Expanded(
+              child: BlocBuilder<NoteBloc, NoteState>(
+                builder: (context, state) {
+                  if (state.errorMessage != null) {
+                    return Center(
+                      child: Text(
+                        'Error: ${state.errorMessage}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    );
+                  }
+
+                  if (state.notes.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No notes available',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                      ),
+                    );
+                  }
+
+                  final filteredNotes = _filterNotes(state.notes);
+
+                  if (filteredNotes.isEmpty && _searchQuery.isNotEmpty) {
+                    return Center(
+                      child: Text(
+                        'No notes found',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                      ),
+                    );
+                  }
+
+                  final sortedNotes = List<Note>.from(filteredNotes)
+                    ..sort((a, b) => b.updatedAt!.compareTo(a.updatedAt!));
+
+                  return RefreshIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                    onRefresh: () async {
+                      context.read<NoteBloc>().add(
+                        const NoteEvent.getAllNotes(),
+                      );
+                    },
+                    child: ListView.separated(
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: 16,
+                      ),
+                      itemCount: sortedNotes.length,
+                      itemBuilder: (_, i) {
+                        final note = sortedNotes[i];
+                        return NoteTileWidget(
+                          note: note,
+                          onTap: () async {
+                            await context.push('/edit-note', extra: note);
+                          },
+                          onLongPress: () => _showDeleteMenu(context, note),
+                        );
+                      },
+                      separatorBuilder: (_, _) => const Gap(6),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            await context.push('/edit-note');
+          },
+          shape: const CircleBorder(),
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
 
-  Future<void> _openNoteDialog(BuildContext context, [Note? note]) async {
-    await showDialog<void>(
+  Future<void> _showDeleteMenu(BuildContext context, Note note) async {
+    await showModalBottomSheet<void>(
       context: context,
-      builder: (dialogContext) {
-        return BlocProvider.value(
-          value: context.read<NoteBloc>(),
-          child: NoteDialogWidget(note: note),
+      builder: (BuildContext ctx) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text(
+                  'Delete Note',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  context.read<NoteBloc>().add(
+                    NoteEvent.deleteNote(note.id!),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.cancel),
+                title: const Text('Cancel'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                },
+              ),
+            ],
+          ),
         );
       },
     );

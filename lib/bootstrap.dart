@@ -8,7 +8,7 @@ import 'package:notes_app/features/notes_list/data/models/note_model.dart';
 Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  Hive.registerAdapter(NoteModelImplAdapter());
+  Hive.registerAdapter<NoteModel>(NoteModelAdapter());
   await configureDependencies();
   runApp(await builder());
 }

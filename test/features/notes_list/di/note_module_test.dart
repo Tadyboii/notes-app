@@ -16,7 +16,7 @@ void main() {
       Hive.init(tempDir.path);
 
       if (!Hive.isAdapterRegistered(0)) {
-        Hive.registerAdapter(NoteModelImplAdapter());
+        Hive.registerAdapter(NoteModelAdapter());
       }
     });
 
