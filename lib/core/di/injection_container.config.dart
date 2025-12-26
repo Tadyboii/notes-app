@@ -36,7 +36,7 @@ import '../../features/notes_list/presentation/bloc/note_bloc.dart' as _i851;
 import 'core_module.dart' as _i154;
 
 extension GetItInjectableX on _i174.GetIt {
-// initializes the registration of main-scope dependencies inside of GetIt
+  // initializes the registration of main-scope dependencies inside of GetIt
   Future<_i174.GetIt> init({
     String? environment,
     _i526.EnvironmentFilter? environmentFilter,
@@ -53,26 +53,35 @@ extension GetItInjectableX on _i174.GetIt {
       preResolve: true,
     );
     gh.lazySingleton<_i706.Uuid>(() => coreModule.uuid);
-    gh.singleton<_i482.NoteLocalDataSource>(() => _i370.NoteLocalDataSourceImpl(
-          notesBox: gh<_i979.Box<_i568.NoteModel>>(),
-          uuid: gh<_i706.Uuid>(),
-        ));
+    gh.singleton<_i482.NoteLocalDataSource>(
+      () => _i370.NoteLocalDataSourceImpl(
+        notesBox: gh<_i979.Box<_i568.NoteModel>>(),
+        uuid: gh<_i706.Uuid>(),
+      ),
+    );
     gh.singleton<_i425.INoteRepository>(
-        () => _i331.NoteRepositoryImpl(gh<_i482.NoteLocalDataSource>()));
+      () => _i331.NoteRepositoryImpl(gh<_i482.NoteLocalDataSource>()),
+    );
     gh.factory<_i201.UpdateNoteUseCase>(
-        () => _i201.UpdateNoteUseCase(gh<_i425.INoteRepository>()));
+      () => _i201.UpdateNoteUseCase(gh<_i425.INoteRepository>()),
+    );
     gh.factory<_i616.DeleteNoteUseCase>(
-        () => _i616.DeleteNoteUseCase(gh<_i425.INoteRepository>()));
+      () => _i616.DeleteNoteUseCase(gh<_i425.INoteRepository>()),
+    );
     gh.factory<_i194.AddNoteUseCase>(
-        () => _i194.AddNoteUseCase(gh<_i425.INoteRepository>()));
+      () => _i194.AddNoteUseCase(gh<_i425.INoteRepository>()),
+    );
     gh.factory<_i238.GetAllNotesUseCase>(
-        () => _i238.GetAllNotesUseCase(gh<_i425.INoteRepository>()));
-    gh.factory<_i851.NoteBloc>(() => _i851.NoteBloc(
-          gh<_i238.GetAllNotesUseCase>(),
-          gh<_i194.AddNoteUseCase>(),
-          gh<_i616.DeleteNoteUseCase>(),
-          gh<_i201.UpdateNoteUseCase>(),
-        ));
+      () => _i238.GetAllNotesUseCase(gh<_i425.INoteRepository>()),
+    );
+    gh.factory<_i851.NoteBloc>(
+      () => _i851.NoteBloc(
+        gh<_i238.GetAllNotesUseCase>(),
+        gh<_i194.AddNoteUseCase>(),
+        gh<_i616.DeleteNoteUseCase>(),
+        gh<_i201.UpdateNoteUseCase>(),
+      ),
+    );
     return this;
   }
 }

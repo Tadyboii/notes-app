@@ -34,7 +34,7 @@ packages:
     source: hosted
     version: "2.13.0"
   bloc:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: bloc
       sha256: a2cebb899f91d36eeeaa55c7b20b5915db5a9df1b8fd4a3c9c825e22e474537d
@@ -347,14 +347,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
-  hive_generator:
-    dependency: "direct main"
-    description:
-      name: hive_generator
-      sha256: "06cb8f58ace74de61f63500564931f9505368f45f98958bd7a6c35ba24159db4"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.1"
   http_multi_server:
     dependency: transitive
     description:

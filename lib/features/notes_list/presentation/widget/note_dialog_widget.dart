@@ -19,10 +19,10 @@ class _NoteDialogWidgetState extends State<NoteDialogWidget> {
   @override
   void initState() {
     super.initState();
-    _titleController =
-        TextEditingController(text: widget.note?.title ?? '');
-    _contentController =
-        TextEditingController(text: widget.note?.content ?? '');
+    _titleController = TextEditingController(text: widget.note?.title ?? '');
+    _contentController = TextEditingController(
+      text: widget.note?.content ?? '',
+    );
   }
 
   @override

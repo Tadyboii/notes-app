@@ -6,8 +6,8 @@ import 'package:notes_app/features/notes_list/domain/repositories/i_note_reposit
 
 @injectable
 class DeleteNoteUseCase implements UseCase<void, String> {
-
   const DeleteNoteUseCase(this.repository);
+
   final INoteRepository repository;
 
   @override

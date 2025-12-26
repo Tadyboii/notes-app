@@ -89,7 +89,7 @@ void main() {
 
         final result = await repository.getAllNotes();
 
-        expect(result, equals(Result<List<Note>, Failure>([])));
+        expect(result, equals(const Result<List<Note>, Failure>([])));
         verify(() => mockDataSource.getAllNotes()).called(1);
       });
 

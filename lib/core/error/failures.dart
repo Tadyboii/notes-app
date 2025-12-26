@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-abstract class Failure extends Equatable{
+abstract class Failure extends Equatable {
   const Failure({this.message});
+
   final String? message;
 
   @override
@@ -10,6 +11,7 @@ abstract class Failure extends Equatable{
 
 class ServerFailure extends Failure {
   const ServerFailure({super.message, this.statusCode});
+
   final int? statusCode;
 
   @override
@@ -27,4 +29,3 @@ class NetworkFailure extends Failure {
 class UnexpectedFailure extends Failure {
   const UnexpectedFailure({super.message});
 }
-

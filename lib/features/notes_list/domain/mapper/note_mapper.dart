@@ -20,7 +20,7 @@ extension NoteModelMapper on Note {
       title: title,
       content: content,
       createdAt: createdAt ?? DateTime.now(),
-      updatedAt: updatedAt ?? DateTime.now()
+      updatedAt: updatedAt ?? DateTime.now(),
     );
   }
 }

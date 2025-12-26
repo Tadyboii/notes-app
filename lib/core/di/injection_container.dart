@@ -9,6 +9,6 @@ final GetIt getIt = GetIt.instance;
 @InjectableInit(
   preferRelativeImports: true,
 )
-FutureOr<void> configureDependencies({String? environment}) {
+FutureOr<GetIt> configureDependencies({String? environment}) {
   return getIt.init(environment: environment);
 }
