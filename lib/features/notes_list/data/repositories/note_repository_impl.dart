@@ -19,14 +19,8 @@ class NoteRepositoryImpl implements INoteRepository {
       final notes = await noteLocalDatasource.getAllNotes();
       final noteEntities = notes.map((note) => note.toDomain()).toList();
       return Result(noteEntities);
-    } on ServerException catch (e) {
-      return Result.failure(
-        ServerFailure(message: e.toString(), statusCode: e.statusCode),
-      );
     } on CacheException catch (e) {
       return Result.failure(CacheFailure(message: e.message));
-    } on NetworkException catch (e) {
-      return Result.failure(NetworkFailure(message: e.message));
     } on Exception catch (e) {
       return Result.failure(UnexpectedFailure(message: e.toString()));
     }
@@ -39,14 +33,8 @@ class NoteRepositoryImpl implements INoteRepository {
       final noteModel = note.toModel();
       await noteLocalDatasource.addNote(noteModel);
       return const Result(null);
-    } on ServerException catch (e) {
-      return Result.failure(
-        ServerFailure(message: e.toString(), statusCode: e.statusCode),
-      );
     } on CacheException catch (e) {
       return Result.failure(CacheFailure(message: e.message));
-    } on NetworkException catch (e) {
-      return Result.failure(NetworkFailure(message: e.message));
     } on Exception catch (e) {
       return Result.failure(UnexpectedFailure(message: e.toString()));
     }
@@ -57,14 +45,8 @@ class NoteRepositoryImpl implements INoteRepository {
     try {
       await noteLocalDatasource.deleteNote(id);
       return const Result(null);
-    } on ServerException catch (e) {
-      return Result.failure(
-        ServerFailure(message: e.toString(), statusCode: e.statusCode),
-      );
     } on CacheException catch (e) {
       return Result.failure(CacheFailure(message: e.message));
-    } on NetworkException catch (e) {
-      return Result.failure(NetworkFailure(message: e.message));
     } on Exception catch (e) {
       return Result.failure(UnexpectedFailure(message: e.toString()));
     }
@@ -76,14 +58,8 @@ class NoteRepositoryImpl implements INoteRepository {
       final noteModel = note.toModel();
       await noteLocalDatasource.updateNote(noteModel);
       return const Result(null);
-    } on ServerException catch (e) {
-      return Result.failure(
-        ServerFailure(message: e.toString(), statusCode: e.statusCode),
-      );
     } on CacheException catch (e) {
       return Result.failure(CacheFailure(message: e.message));
-    } on NetworkException catch (e) {
-      return Result.failure(NetworkFailure(message: e.message));
     } on Exception catch (e) {
       return Result.failure(UnexpectedFailure(message: e.toString()));
     }
