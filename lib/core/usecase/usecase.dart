@@ -4,7 +4,7 @@ import 'package:notes_app/core/result/result.dart';
 
 part 'usecase.freezed.dart';
 
-mixin UseCase<T, Params> {
+abstract class UseCase<T, Params> {
   Future<Result<T, Failure>> call(Params params);
 }
 
