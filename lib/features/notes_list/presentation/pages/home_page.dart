@@ -183,8 +183,12 @@ class _NoteListViewState extends State<_NoteListView> {
                 ),
                 onTap: () {
                   Navigator.of(ctx).pop();
+                  final noteId = note.id;
+                  if (noteId == null) {
+                    return;
+                  }
                   context.read<NoteBloc>().add(
-                    NoteEvent.deleteNote(note.id!),
+                      NoteEvent.deleteNote(noteId),
                   );
                 },
               ),

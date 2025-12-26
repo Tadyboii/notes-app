@@ -43,7 +43,6 @@ class _NoteTileWidgetState extends State<NoteTileWidget>
   }
 
   Future<void> _handleTap() async {
-    await _controller.reverse();
     await _controller.forward();
 
     widget.onTap?.call();
