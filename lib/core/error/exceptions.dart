@@ -1,6 +1,6 @@
 class ServerException implements Exception {
-
   const ServerException(this.message, this.statusCode);
+
   final String? message;
   final int? statusCode;
 
@@ -10,6 +10,7 @@ class ServerException implements Exception {
 
 class CacheException implements Exception {
   const CacheException([this.message = 'Cache Error']);
+
   final String? message;
 
   @override
@@ -18,9 +19,9 @@ class CacheException implements Exception {
 
 class NetworkException implements Exception {
   const NetworkException([this.message = 'No Internet Connection']);
+
   final String? message;
 
   @override
   String toString() => 'NetworkException: $message';
 }
-

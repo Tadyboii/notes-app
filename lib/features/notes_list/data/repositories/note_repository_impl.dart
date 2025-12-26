@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:notes_app/core/error/exceptions.dart';
 import 'package:notes_app/core/error/failures.dart';
 import 'package:notes_app/core/result/result.dart';
 import 'package:notes_app/features/notes_list/data/datasources/note_local_datasource.dart';
@@ -8,8 +9,8 @@ import 'package:notes_app/features/notes_list/domain/repositories/i_note_reposit
 
 @Singleton(as: INoteRepository)
 class NoteRepositoryImpl implements INoteRepository {
-
   NoteRepositoryImpl(this.noteLocalDatasource);
+
   final NoteLocalDataSource noteLocalDatasource;
 
   @override
@@ -18,10 +19,13 @@ class NoteRepositoryImpl implements INoteRepository {
       final notes = await noteLocalDatasource.getAllNotes();
       final noteEntities = notes.map((note) => note.toDomain()).toList();
       return Result(noteEntities);
-    } catch (e) {
+    } on CacheException catch (e) {
+      return Result.failure(CacheFailure(message: e.message));
+    } on Exception catch (e) {
       return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
+
 
   @override
   Future<Result<void, Failure>> addNote(Note note) async {
@@ -29,7 +33,9 @@ class NoteRepositoryImpl implements INoteRepository {
       final noteModel = note.toModel();
       await noteLocalDatasource.addNote(noteModel);
       return const Result(null);
-    } catch (e) {
+    } on CacheException catch (e) {
+      return Result.failure(CacheFailure(message: e.message));
+    } on Exception catch (e) {
       return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
@@ -39,7 +45,9 @@ class NoteRepositoryImpl implements INoteRepository {
     try {
       await noteLocalDatasource.deleteNote(id);
       return const Result(null);
-    } catch (e) {
+    } on CacheException catch (e) {
+      return Result.failure(CacheFailure(message: e.message));
+    } on Exception catch (e) {
       return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
@@ -50,7 +58,9 @@ class NoteRepositoryImpl implements INoteRepository {
       final noteModel = note.toModel();
       await noteLocalDatasource.updateNote(noteModel);
       return const Result(null);
-    } catch (e) {
+    } on CacheException catch (e) {
+      return Result.failure(CacheFailure(message: e.message));
+    } on Exception catch (e) {
       return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }

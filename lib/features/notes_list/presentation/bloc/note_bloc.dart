@@ -16,7 +16,6 @@ part 'note_state.dart';
 
 @injectable
 class NoteBloc extends Bloc<NoteEvent, NoteState> {
-
   NoteBloc(
     this.getAllNotesUseCase,
     this.addNoteUseCase,
@@ -36,6 +35,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       }
     });
   }
+
   final GetAllNotesUseCase getAllNotesUseCase;
   final AddNoteUseCase addNoteUseCase;
   final DeleteNoteUseCase deleteNoteUseCase;

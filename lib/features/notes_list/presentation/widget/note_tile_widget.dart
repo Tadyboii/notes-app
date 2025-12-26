@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 
 class NoteTileWidget extends StatelessWidget {
+  const NoteTileWidget({
+    required this.note,
+    super.key,
+    this.onTap,
+    this.onDelete,
+  });
 
-  const NoteTileWidget({required this.note, super.key, this.onTap, this.onDelete});
   final Note note;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;

@@ -36,10 +36,10 @@ void main() {
 
       test(
         'returns success with list of notes when repository call succeeds',
-            () async {
+        () async {
           // Arrange
           when(
-                () => mockRepository.getAllNotes(),
+            () => mockRepository.getAllNotes(),
           ).thenAnswer((_) async => Result(testNotes));
 
           // Act
@@ -54,7 +54,7 @@ void main() {
       test('returns success with empty list when no notes exist', () async {
         // Arrange
         when(
-              () => mockRepository.getAllNotes(),
+          () => mockRepository.getAllNotes(),
         ).thenAnswer((_) async => const Result([]));
 
         // Act
@@ -69,7 +69,7 @@ void main() {
         // Arrange
         const failure = ServerFailure(message: 'Failed to fetch notes');
         when(
-              () => mockRepository.getAllNotes(),
+          () => mockRepository.getAllNotes(),
         ).thenAnswer((_) async => const Result.failure(failure));
 
         // Act
@@ -85,9 +85,11 @@ void main() {
 
       test('returns CacheFailure when local storage fails', () async {
         // Arrange
-        const failure = CacheFailure(message: 'Failed to load notes from cache');
+        const failure = CacheFailure(
+          message: 'Failed to load notes from cache',
+        );
         when(
-              () => mockRepository.getAllNotes(),
+          () => mockRepository.getAllNotes(),
         ).thenAnswer((_) async => const Result.failure(failure));
 
         // Act
@@ -101,29 +103,32 @@ void main() {
         verify(() => mockRepository.getAllNotes()).called(1);
       });
 
-      test('returns NetworkFailure when there is no internet connection', () async {
-        // Arrange
-        const failure = NetworkFailure(message: 'No internet connection');
-        when(
-              () => mockRepository.getAllNotes(),
-        ).thenAnswer((_) async => const Result.failure(failure));
+      test(
+        'returns NetworkFailure when there is no internet connection',
+        () async {
+          // Arrange
+          const failure = NetworkFailure(message: 'No internet connection');
+          when(
+            () => mockRepository.getAllNotes(),
+          ).thenAnswer((_) async => const Result.failure(failure));
 
-        // Act
-        final result = await useCase.call(const NoParams());
+          // Act
+          final result = await useCase.call(const NoParams());
 
-        // Assert
-        expect(
-          result,
-          equals(const ResultFailure<List<Note>, Failure>(failure)),
-        );
-        verify(() => mockRepository.getAllNotes()).called(1);
-      });
+          // Assert
+          expect(
+            result,
+            equals(const ResultFailure<List<Note>, Failure>(failure)),
+          );
+          verify(() => mockRepository.getAllNotes()).called(1);
+        },
+      );
 
       test('returns UnexpectedFailure when unexpected error occurs', () async {
         // Arrange
         const failure = UnexpectedFailure(message: 'Unexpected error occurred');
         when(
-              () => mockRepository.getAllNotes(),
+          () => mockRepository.getAllNotes(),
         ).thenAnswer((_) async => const Result.failure(failure));
 
         // Act

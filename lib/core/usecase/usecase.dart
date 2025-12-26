@@ -4,17 +4,17 @@ import 'package:notes_app/core/result/result.dart';
 
 part 'usecase.freezed.dart';
 
-abstract class UseCase<Type, Params> {
-  Future<Result<Type, Failure>> call(Params params);
+abstract class UseCase<T, Params> {
+  Future<Result<T, Failure>> call(Params params);
 }
 
 class NoReturn {
-
   factory NoReturn() {
     return _singleton;
   }
 
   NoReturn._internal();
+
   static final NoReturn _singleton = NoReturn._internal();
 }
 

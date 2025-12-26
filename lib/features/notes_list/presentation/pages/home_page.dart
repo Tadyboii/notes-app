@@ -61,12 +61,12 @@ class _NoteListView extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               itemCount: state.notes.length,
               itemBuilder: (_, i) {
-                final sortedNotes = List<Note>.from(
-                  state.notes,
-                )
-                ..sort(
-                  (a, b) => b.updatedAt!.compareTo(a.updatedAt!),
-                );
+                final sortedNotes =
+                    List<Note>.from(
+                      state.notes,
+                    )..sort(
+                      (a, b) => b.updatedAt!.compareTo(a.updatedAt!),
+                    );
                 final note = sortedNotes[i];
                 return NoteTileWidget(
                   note: note,
@@ -89,8 +89,8 @@ class _NoteListView extends StatelessWidget {
     );
   }
 
-  void _openNoteDialog(BuildContext context, [Note? note]) {
-    showDialog(
+  Future<void> _openNoteDialog(BuildContext context, [Note? note]) async {
+    await showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return BlocProvider.value(

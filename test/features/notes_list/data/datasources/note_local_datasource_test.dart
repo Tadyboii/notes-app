@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 
 // Mock classes
 class MockBox extends Mock implements Box<NoteModel> {}
+
 class MockUuid extends Mock implements Uuid {}
 
 void main() {
@@ -86,14 +87,22 @@ void main() {
           updatedAt: now,
         );
 
+        // Use the specific type parameters for put
         when(() => mockUuid.v4()).thenReturn(generatedId);
-        when(() => mockBox.put(any(), any())).thenAnswer((_) async {});
+        when(
+          () => mockBox.put(any<String>(), any<NoteModel>()),
+        ).thenAnswer((_) async {});
 
         await dataSource.addNote(testNote);
 
         final capturedNote =
-        verify(() => mockBox.put(generatedId, captureAny())).captured.single
-        as NoteModel;
+            verify(
+                  () => mockBox.put(
+                    captureAny<String>(),
+                    captureAny<NoteModel>(),
+                  ),
+                ).captured.single
+                as NoteModel;
 
         expect(capturedNote.id, generatedId);
         expect(capturedNote.createdAt, now);
@@ -112,18 +121,21 @@ void main() {
           updatedAt: now,
         );
 
-        when(() => mockBox.put(any(), any())).thenAnswer((_) async {});
+        // Use the specific type parameters for put
+        when(
+          () => mockBox.put(any<String>(), any<NoteModel>()),
+        ).thenAnswer((_) async {});
 
         await dataSource.updateNote(testNote);
 
-        verify(() => mockBox.put('1', testNote)).called(1);
+        verify(() => mockBox.put(testNote.id, testNote)).called(1);
       });
     });
 
     group('deleteNote', () {
       test('deletes note from Hive box by id', () async {
         const noteId = '1';
-        when(() => mockBox.delete(any())).thenAnswer((_) async {});
+        when(() => mockBox.delete(any<String>())).thenAnswer((_) async {});
 
         await dataSource.deleteNote(noteId);
 

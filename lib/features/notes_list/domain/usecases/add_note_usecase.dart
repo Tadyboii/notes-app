@@ -7,8 +7,8 @@ import 'package:notes_app/features/notes_list/domain/repositories/i_note_reposit
 
 @injectable
 class AddNoteUseCase implements UseCase<void, Note> {
-
   const AddNoteUseCase(this.repository);
+
   final INoteRepository repository;
 
   @override
