@@ -27,8 +27,11 @@ class NoteRepositoryImpl implements INoteRepository {
       return Result.failure(CacheFailure(message: e.message));
     } on NetworkException catch (e) {
       return Result.failure(NetworkFailure(message: e.message));
+    } on Exception catch (e) {
+      return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
+
 
   @override
   Future<Result<void, Failure>> addNote(Note note) async {
@@ -44,6 +47,8 @@ class NoteRepositoryImpl implements INoteRepository {
       return Result.failure(CacheFailure(message: e.message));
     } on NetworkException catch (e) {
       return Result.failure(NetworkFailure(message: e.message));
+    } on Exception catch (e) {
+      return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
 
@@ -60,6 +65,8 @@ class NoteRepositoryImpl implements INoteRepository {
       return Result.failure(CacheFailure(message: e.message));
     } on NetworkException catch (e) {
       return Result.failure(NetworkFailure(message: e.message));
+    } on Exception catch (e) {
+      return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
 
@@ -77,6 +84,8 @@ class NoteRepositoryImpl implements INoteRepository {
       return Result.failure(CacheFailure(message: e.message));
     } on NetworkException catch (e) {
       return Result.failure(NetworkFailure(message: e.message));
+    } on Exception catch (e) {
+      return Result.failure(UnexpectedFailure(message: e.toString()));
     }
   }
 }
