@@ -73,8 +73,8 @@ class _EditNotePageState extends State<EditNotePage> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              Navigator.of(context).pop();
               FocusScope.of(context).unfocus();
+              Navigator.of(context).pop();
             },
           ),
         ),
