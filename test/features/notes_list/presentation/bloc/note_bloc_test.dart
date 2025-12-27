@@ -168,9 +168,22 @@ void main() {
           ).thenAnswer((_) async => const ResultSuccess(tNotes));
           return noteBloc;
         },
-        act: (bloc) => bloc.add(const NoteEvent.updateNote(tNote)),
+        seed: () => NoteState.initial().copyWith(notes: [tNote]),
+        act: (bloc) => bloc.add(
+          const NoteEvent.updateNote(
+            Note(
+              id: '1',
+              title: 'Updated Note',
+              content: 'Updated Content',
+            ),
+          ),
+        ),
         expect: () => [
-          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteState.initial().copyWith(
+            notes: [tNote],
+            isLoading: true,
+            errorMessage: null,
+          ),
           NoteState.initial().copyWith(notes: tNotes, isLoading: false),
         ],
         verify: (_) {
@@ -189,9 +202,21 @@ void main() {
           );
           return noteBloc;
         },
-        act: (bloc) => bloc.add(const NoteEvent.updateNote(tNote)),
+        seed: () => NoteState.initial().copyWith(notes: [tNote]),
+        act: (bloc) => bloc.add(
+          const NoteEvent.updateNote(
+            Note(
+              id: '1',
+              title: 'Updated Note',
+              content: 'Updated Content',
+            ),
+          ),
+        ),
         expect: () => [
-          NoteState.initial().copyWith(errorMessage: 'Failed to update note'),
+          NoteState.initial().copyWith(
+            notes: [tNote],
+            errorMessage: 'Failed to update note',
+          ),
         ],
         verify: (_) {
           verify(() => mockUpdateNoteUseCase(any())).called(1);
