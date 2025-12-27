@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
-import 'package:go_router/go_router.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
 
@@ -72,7 +71,7 @@ class _EditNotePageState extends State<EditNotePage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             _save();
-            context.go('/');
+            Navigator.of(context).pop();
           },
         ),
       ),
@@ -86,10 +85,10 @@ class _EditNotePageState extends State<EditNotePage> {
                 fontWeight: FontWeight.bold,
               ),
               controller: _titleController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Title',
                 hintStyle: TextStyle(
-                  color: Colors.white24,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 border: InputBorder.none,
               ),
@@ -97,10 +96,10 @@ class _EditNotePageState extends State<EditNotePage> {
             const Gap(16),
             TextField(
               controller: _contentController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Start typing',
                 hintStyle: TextStyle(
-                  color: Colors.white24,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 border: InputBorder.none,
                 alignLabelWithHint: true,
