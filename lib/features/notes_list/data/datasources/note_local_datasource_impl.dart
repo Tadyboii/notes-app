@@ -13,7 +13,22 @@ class NoteLocalDataSourceImpl extends NoteLocalDataSource {
 
   @override
   Future<List<NoteModel>> getAllNotes() async {
-    final notes = notesBox.values.toList();
+    final notes = notesBox.values.toList()
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return notes;
+  }
+
+  @override
+  Future<List<NoteModel>> searchNotes(String query) async {
+    final notes =
+        notesBox.values
+            .where(
+              (note) =>
+                  note.title.toLowerCase().contains(query.toLowerCase()) ||
+                  note.content.toLowerCase().contains(query.toLowerCase()),
+            )
+            .toList()
+          ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return notes;
   }
 

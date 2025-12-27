@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
 import 'package:notes_app/features/notes_list/presentation/pages/edit_note_page.dart';
+import 'package:notes_app/features/notes_list/presentation/widget/note_search_bar_widget.dart';
 import 'package:notes_app/features/notes_list/presentation/widget/note_tile_widget.dart';
 
 class HomePage extends StatelessWidget {
@@ -21,109 +22,115 @@ class _NoteListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notes'),
-        centerTitle: false,
-      ),
-      body: Column(
-        children: [
-          // NoteSearchBarWidget(),
-          Expanded(
-            child: BlocBuilder<NoteBloc, NoteState>(
-              builder: (context, state) {
-                if (state.errorMessage != null) {
-                  return Center(
-                    child: Text(
-                      'Error: ${state.errorMessage}',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  );
-                }
-
-                if (state.notes.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No notes available',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  );
-                }
-
-                return RefreshIndicator(
-                  color: Theme.of(context).colorScheme.primary,
-                  onRefresh: () async {
-                    context.read<NoteBloc>().add(
-                      const NoteEvent.getAllNotes(),
-                    );
-                  },
-                  child: ListView.separated(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      bottom: 16,
-                    ),
-                    itemCount: state.notes.length,
-                    itemBuilder: (_, i) {
-                      final note = state.notes[i];
-                      return OpenContainer(
-                        closedBuilder: (context, action) {
-                          return NoteTileWidget(
-                            note: note,
-                            onTap: action,
-                            onLongPress: () => _showDeleteMenu(context, note),
-                          );
-                        },
-                        openBuilder: (context, action) {
-                          return EditNotePage(
-                            note: note,
-                          );
-                        },
-                        transitionDuration: const Duration(milliseconds: 500),
-                        transitionType: ContainerTransitionType.fadeThrough,
-                        closedElevation: 6,
-                        openElevation: 0,
-                        closedColor: Theme.of(
-                          context,
-                        ).colorScheme.surface,
-                        openColor: Theme.of(context).colorScheme.surface,
-                        middleColor: Theme.of(context).colorScheme.surface,
-                      );
-                    },
-                    separatorBuilder: (_, _) => const Gap(6),
-                  ),
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Notes'),
+          centerTitle: false,
+        ),
+        body: Column(
+          children: [
+            NoteSearchBarWidget(
+              onSearchChanged: (query) {
+                context.read<NoteBloc>().add(
+                  NoteEvent.searchNotes(query),
                 );
               },
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: OpenContainer(
-        closedBuilder: (context, action) {
-          return FloatingActionButton(
-            onPressed: action,
-            shape: const CircleBorder(),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            elevation: 0,
-            child: const Icon(Icons.add),
-          );
-        },
-        openBuilder: (context, action) {
-          return const EditNotePage();
-        },
-        closedShape: const CircleBorder(),
-        transitionDuration: const Duration(milliseconds: 500),
-        transitionType: ContainerTransitionType.fadeThrough,
-        closedElevation: 0,
-        openElevation: 0,
-        closedColor: Theme.of(context).colorScheme.primary,
-        openColor: Theme.of(context).colorScheme.surface,
-        middleColor: Theme.of(context).colorScheme.surface,
+            Expanded(
+              child: BlocBuilder<NoteBloc, NoteState>(
+                builder: (context, state) {
+                  if (state.errorMessage != null) {
+                    return Center(
+                      child: Text(
+                        'Error: ${state.errorMessage}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    );
+                  }
 
+                  if (state.notes.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No notes available',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                    onRefresh: () async {
+                      context.read<NoteBloc>().add(
+                        const NoteEvent.getAllNotes(),
+                      );
+                    },
+                    child: ListView.separated(
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: 16,
+                      ),
+                      itemCount: state.notes.length,
+                      itemBuilder: (_, i) {
+                        final note = state.notes[i];
+                        return OpenContainer(
+                          closedBuilder: (context, action) {
+                            return NoteTileWidget(
+                              note: note,
+                              onTap: action,
+                              onLongPress: () => _showDeleteMenu(context, note),
+                            );
+                          },
+                          openBuilder: (context, action) {
+                            return EditNotePage(
+                              note: note,
+                            );
+                          },
+                          transitionDuration: const Duration(milliseconds: 500),
+                          transitionType: ContainerTransitionType.fadeThrough,
+                          closedElevation: 6,
+                          openElevation: 0,
+                          closedColor: Theme.of(
+                            context,
+                          ).colorScheme.surface,
+                          openColor: Theme.of(context).colorScheme.surface,
+                          middleColor: Theme.of(context).colorScheme.surface,
+                        );
+                      },
+                      separatorBuilder: (_, _) => const Gap(6),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: OpenContainer(
+          closedBuilder: (context, action) {
+            return FloatingActionButton(
+              onPressed: action,
+              shape: const CircleBorder(),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              elevation: 0,
+              child: const Icon(Icons.add),
+            );
+          },
+          openBuilder: (context, action) {
+            return const EditNotePage();
+          },
+          closedShape: const CircleBorder(),
+          transitionDuration: const Duration(milliseconds: 500),
+          transitionType: ContainerTransitionType.fadeThrough,
+          closedElevation: 0,
+          openElevation: 0,
+          closedColor: Theme.of(context).colorScheme.primary,
+          openColor: Theme.of(context).colorScheme.surface,
+          middleColor: Theme.of(context).colorScheme.surface,
+        ),
       ),
     );
   }

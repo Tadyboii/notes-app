@@ -37,10 +37,6 @@ class _EditNotePageState extends State<EditNotePage> {
     final title = _titleController.text.trim();
     final content = _contentController.text.trim();
 
-    if (title.isEmpty && content.isEmpty) {
-      return;
-    }
-
     if (widget.note != null) {
       context.read<NoteBloc>().add(
         NoteEvent.updateNote(
@@ -65,48 +61,56 @@ class _EditNotePageState extends State<EditNotePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            _save();
-            Navigator.of(context).pop();
-          },
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          _save();
+          FocusScope.of(context).unfocus();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.of(context).pop();
+              FocusScope.of(context).unfocus();
+            },
+          ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          children: [
-            TextField(
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              controller: _titleController,
-              decoration: InputDecoration(
-                hintText: 'Title',
-                hintStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            children: [
+              TextField(
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
-                border: InputBorder.none,
-              ),
-            ),
-            const Gap(16),
-            TextField(
-              controller: _contentController,
-              decoration: InputDecoration(
-                hintText: 'Start typing',
-                hintStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                controller: _titleController,
+                decoration: InputDecoration(
+                  hintText: 'Title',
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  border: InputBorder.none,
                 ),
-                border: InputBorder.none,
-                alignLabelWithHint: true,
               ),
-              maxLines: 8,
-            ),
-          ],
+              const Gap(16),
+              TextField(
+                controller: _contentController,
+                decoration: InputDecoration(
+                  hintText: 'Start typing',
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  border: InputBorder.none,
+                  alignLabelWithHint: true,
+                ),
+                maxLines: 8,
+              ),
+            ],
+          ),
         ),
       ),
     );

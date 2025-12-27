@@ -94,7 +94,7 @@ void main() {
       });
 
       test(
-        'returns UnexpectedFailure when data source throws CacheException',
+        'returns CacheFailure when data source throws CacheException',
             () async {
           when(() => mockDataSource.getAllNotes())
               .thenThrow(const CacheException('Failed to load notes'));
@@ -103,9 +103,8 @@ void main() {
 
           expect(result, isA<ResultFailure<List<Note>, Failure>>());
           final failure = (result as ResultFailure).failure;
-          expect(failure, isA<UnexpectedFailure>());
-          expect(failure.message, contains('CacheException'));
-          expect(failure.message, contains('Failed to load notes'));
+          expect(failure, isA<CacheFailure>());
+          expect(failure.message, 'Failed to load notes');
           verify(() => mockDataSource.getAllNotes()).called(1);
         },
       );
@@ -164,7 +163,7 @@ void main() {
       });
 
       test(
-        'returns UnexpectedFailure when data source throws CacheException',
+        'returns CacheFailure when data source throws CacheException',
             () async {
           when(() => mockDataSource.addNote(any()))
               .thenThrow(const CacheException('Failed to save note'));
@@ -173,9 +172,8 @@ void main() {
 
           expect(result, isA<ResultFailure<void, Failure>>());
           final failure = (result as ResultFailure).failure;
-          expect(failure, isA<UnexpectedFailure>());
-          expect(failure.message, contains('CacheException'));
-          expect(failure.message, contains('Failed to save note'));
+          expect(failure, isA<CacheFailure>());
+          expect(failure.message, 'Failed to save note');
           verify(() => mockDataSource.addNote(any())).called(1);
         },
       );
@@ -233,7 +231,7 @@ void main() {
       });
 
       test(
-        'returns UnexpectedFailure when data source throws CacheException',
+        'returns CacheFailure when data source throws CacheException',
             () async {
           when(() => mockDataSource.updateNote(any()))
               .thenThrow(const CacheException('Failed to update note'));
@@ -242,9 +240,8 @@ void main() {
 
           expect(result, isA<ResultFailure<void, Failure>>());
           final failure = (result as ResultFailure).failure;
-          expect(failure, isA<UnexpectedFailure>());
-          expect(failure.message, contains('CacheException'));
-          expect(failure.message, contains('Failed to update note'));
+          expect(failure, isA<CacheFailure>());
+          expect(failure.message, 'Failed to update note');
           verify(() => mockDataSource.updateNote(any())).called(1);
         },
       );
@@ -289,7 +286,7 @@ void main() {
       });
 
       test(
-        'returns UnexpectedFailure when data source throws CacheException',
+        'returns CacheFailure when data source throws CacheException',
             () async {
           when(() => mockDataSource.deleteNote(any()))
               .thenThrow(const CacheException('Failed to delete note'));
@@ -298,9 +295,8 @@ void main() {
 
           expect(result, isA<ResultFailure<void, Failure>>());
           final failure = (result as ResultFailure).failure;
-          expect(failure, isA<UnexpectedFailure>());
-          expect(failure.message, contains('CacheException'));
-          expect(failure.message, contains('Failed to delete note'));
+          expect(failure, isA<CacheFailure>());
+          expect(failure.message, 'Failed to delete note');
           verify(() => mockDataSource.deleteNote(testNoteId)).called(1);
         },
       );

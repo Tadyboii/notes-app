@@ -8,10 +8,13 @@ import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/add_note_usecase.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/delete_note_usecase.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/get_all_notes_usecase.dart';
+import 'package:notes_app/features/notes_list/domain/usecases/search_notes_usecase.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/update_note_usecase.dart';
 import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
 
 class MockGetAllNotesUseCase extends Mock implements GetAllNotesUseCase {}
+
+class MockSearchNotesUseCase extends Mock implements SearchNotesUseCase {}
 
 class MockAddNoteUseCase extends Mock implements AddNoteUseCase {}
 
@@ -22,6 +25,7 @@ class MockUpdateNoteUseCase extends Mock implements UpdateNoteUseCase {}
 void main() {
   late NoteBloc noteBloc;
   late MockGetAllNotesUseCase mockGetAllNotesUseCase;
+  late MockSearchNotesUseCase mockSearchNotesUseCase;
   late MockAddNoteUseCase mockAddNoteUseCase;
   late MockDeleteNoteUseCase mockDeleteNoteUseCase;
   late MockUpdateNoteUseCase mockUpdateNoteUseCase;
@@ -34,12 +38,14 @@ void main() {
 
   setUp(() {
     mockGetAllNotesUseCase = MockGetAllNotesUseCase();
+    mockSearchNotesUseCase = MockSearchNotesUseCase();
     mockAddNoteUseCase = MockAddNoteUseCase();
     mockDeleteNoteUseCase = MockDeleteNoteUseCase();
     mockUpdateNoteUseCase = MockUpdateNoteUseCase();
 
     noteBloc = NoteBloc(
       mockGetAllNotesUseCase,
+      mockSearchNotesUseCase,
       mockAddNoteUseCase,
       mockDeleteNoteUseCase,
       mockUpdateNoteUseCase,
@@ -229,6 +235,49 @@ void main() {
         verify: (_) {
           verify(() => mockDeleteNoteUseCase(any())).called(1);
           verifyNever(() => mockGetAllNotesUseCase(any()));
+        },
+      );
+    });
+
+    group('SearchNotes', () {
+      const tQuery = 'Test';
+
+      blocTest<NoteBloc, NoteState>(
+        'should emit [loading, success] when searchNotes is successful',
+        build: () {
+          when(() => mockSearchNotesUseCase(tQuery))
+              .thenAnswer((_) async => const ResultSuccess(tNotes));
+          return noteBloc;
+        },
+        act: (bloc) => bloc.add(const NoteEvent.searchNotes(tQuery)),
+        expect: () => [
+          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteState.initial().copyWith(notes: tNotes, isLoading: false),
+        ],
+        verify: (_) {
+          verify(() => mockSearchNotesUseCase(tQuery)).called(1);
+        },
+      );
+      blocTest<NoteBloc, NoteState>(
+        'should emit [loading, error] when searchNotes fails',
+        build: () {
+          when(() => mockSearchNotesUseCase(tQuery)).thenAnswer(
+                (_) async => const Result.failure(
+              UnexpectedFailure(message: 'Failed to search notes'),
+            ),
+          );
+          return noteBloc;
+        },
+        act: (bloc) => bloc.add(const NoteEvent.searchNotes(tQuery)),
+        expect: () => [
+          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteState.initial().copyWith(
+            isLoading: false,
+            errorMessage: 'Failed to search notes',
+          ),
+        ],
+        verify: (_) {
+          verify(() => mockSearchNotesUseCase(tQuery)).called(1);
         },
       );
     });

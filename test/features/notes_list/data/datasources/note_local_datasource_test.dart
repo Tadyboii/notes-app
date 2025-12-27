@@ -38,30 +38,30 @@ void main() {
 
   group('NoteLocalDataSourceImpl', () {
     group('getAllNotes', () {
-      test('returns list of notes from Hive box', () async {
+      test('returns list of notes sorted by updatedAt descending', () async {
         final now = DateTime.now();
-        final testNotes = [
-          NoteModel(
-            id: '1',
-            title: 'Note 1',
-            content: 'Content 1',
-            createdAt: now.subtract(const Duration(days: 2)),
-            updatedAt: now.subtract(const Duration(days: 1)),
-          ),
-          NoteModel(
-            id: '2',
-            title: 'Note 2',
-            content: 'Content 2',
-            createdAt: now.subtract(const Duration(days: 1)),
-            updatedAt: now,
-          ),
-        ];
-        when(() => mockBox.values).thenReturn(testNotes);
+        final note1 = NoteModel(
+          id: '1',
+          title: 'Note 1',
+          content: 'Content 1',
+          createdAt: now.subtract(const Duration(days: 2)),
+          updatedAt: now.subtract(const Duration(days: 1)),
+        );
+        final note2 = NoteModel(
+          id: '2',
+          title: 'Note 2',
+          content: 'Content 2',
+          createdAt: now.subtract(const Duration(days: 1)),
+          updatedAt: now,
+        );
+
+        when(() => mockBox.values).thenReturn([note1, note2]);
 
         final result = await dataSource.getAllNotes();
 
-        expect(result, equals(testNotes));
         expect(result.length, 2);
+        expect(result[0].id, '2');
+        expect(result[1].id, '1');
         verify(() => mockBox.values).called(1);
       });
 
@@ -87,24 +87,27 @@ void main() {
           updatedAt: now,
         );
 
-        // Use the specific type parameters for put
         when(() => mockUuid.v4()).thenReturn(generatedId);
         when(
-          () => mockBox.put(any<String>(), any<NoteModel>()),
+              () => mockBox.put(any<String>(), any<NoteModel>()),
         ).thenAnswer((_) async {});
 
         await dataSource.addNote(testNote);
 
-        final capturedNote =
-            verify(
-                  () => mockBox.put(
-                    captureAny<String>(),
-                    captureAny<NoteModel>(),
-                  ),
-                ).captured.single
-                as NoteModel;
+        final captured = verify(
+              () => mockBox.put(
+            captureAny<String>(),
+            captureAny<NoteModel>(),
+          ),
+        ).captured;
 
+        expect(captured.length, 2);
+        expect(captured[0], generatedId);
+
+        final capturedNote = captured[1] as NoteModel;
         expect(capturedNote.id, generatedId);
+        expect(capturedNote.title, 'New Note');
+        expect(capturedNote.content, 'New Content');
         expect(capturedNote.createdAt, now);
         expect(capturedNote.updatedAt, now);
       });
@@ -121,9 +124,8 @@ void main() {
           updatedAt: now,
         );
 
-        // Use the specific type parameters for put
         when(
-          () => mockBox.put(any<String>(), any<NoteModel>()),
+              () => mockBox.put(any<String>(), any<NoteModel>()),
         ).thenAnswer((_) async {});
 
         await dataSource.updateNote(testNote);

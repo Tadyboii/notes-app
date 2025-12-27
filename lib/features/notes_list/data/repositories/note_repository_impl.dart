@@ -26,6 +26,18 @@ class NoteRepositoryImpl implements INoteRepository {
     }
   }
 
+  @override
+  Future<Result<List<Note>, Failure>> searchNotes(String query) async {
+    try {
+      final notes = await noteLocalDatasource.searchNotes(query);
+      final noteEntities = notes.map((note) => note.toDomain()).toList();
+      return Result(noteEntities);
+    } on CacheException catch (e) {
+      return Result.failure(CacheFailure(message: e.message));
+    } on Exception catch (e) {
+      return Result.failure(UnexpectedFailure(message: e.toString()));
+    }
+  }
 
   @override
   Future<Result<void, Failure>> addNote(Note note) async {

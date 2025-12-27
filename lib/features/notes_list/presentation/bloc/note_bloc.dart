@@ -8,6 +8,7 @@ import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/add_note_usecase.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/delete_note_usecase.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/get_all_notes_usecase.dart';
+import 'package:notes_app/features/notes_list/domain/usecases/search_notes_usecase.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/update_note_usecase.dart';
 
 part 'note_bloc.freezed.dart';
@@ -18,6 +19,7 @@ part 'note_state.dart';
 class NoteBloc extends Bloc<NoteEvent, NoteState> {
   NoteBloc(
     this.getAllNotesUseCase,
+    this.searchNotesUseCase,
     this.addNoteUseCase,
     this.deleteNoteUseCase,
     this.updateNoteUseCase,
@@ -26,6 +28,8 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       switch (event) {
         case _GetAllNotes():
           await _getAllNotes(emit);
+        case _SearchNotes(:final query):
+          await _searchNotes(query, emit);
         case _AddNote(:final note):
           await _addNote(note, emit);
         case _UpdateNote(:final note):
@@ -37,13 +41,16 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   }
 
   final GetAllNotesUseCase getAllNotesUseCase;
+  final SearchNotesUseCase searchNotesUseCase;
   final AddNoteUseCase addNoteUseCase;
   final DeleteNoteUseCase deleteNoteUseCase;
   final UpdateNoteUseCase updateNoteUseCase;
 
+  String? _currentSearchQuery;
+
   Future<void> _getAllNotes(Emitter<NoteState> emit) async {
     emit(state.copyWith(isLoading: true, errorMessage: null));
-
+    _currentSearchQuery = null;
     final result = await getAllNotesUseCase(const NoParams());
     switch (result) {
       case ResultSuccess<List<Note>, Failure>(:final value):
@@ -54,11 +61,32 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     }
   }
 
+  Future<void> _searchNotes(String query, Emitter<NoteState> emit) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+    _currentSearchQuery = query;
+    final result = await searchNotesUseCase(query);
+    switch (result) {
+      case ResultSuccess<List<Note>, Failure>(:final value):
+        emit(state.copyWith(notes: value, isLoading: false));
+
+      case ResultFailure<List<Note>, Failure>(:final failure):
+        emit(state.copyWith(isLoading: false, errorMessage: failure.message));
+    }
+  }
+
   Future<void> _addNote(Note note, Emitter<NoteState> emit) async {
+    if (note.title.trim().isEmpty && note.content.trim().isEmpty) {
+      return;
+    }
+
     final result = await addNoteUseCase(note);
     switch (result) {
       case ResultSuccess<void, Failure>():
-        add(const NoteEvent.getAllNotes());
+        if (_currentSearchQuery != null && _currentSearchQuery!.isNotEmpty) {
+          add(NoteEvent.searchNotes(_currentSearchQuery!));
+        } else {
+          add(const NoteEvent.getAllNotes());
+        }
 
       case ResultFailure<void, Failure>(:final failure):
         emit(state.copyWith(errorMessage: failure.message));
@@ -69,17 +97,39 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     final result = await deleteNoteUseCase(id);
     switch (result) {
       case ResultSuccess<void, Failure>():
-        add(const NoteEvent.getAllNotes());
+        if (_currentSearchQuery != null && _currentSearchQuery!.isNotEmpty) {
+          add(NoteEvent.searchNotes(_currentSearchQuery!));
+        } else {
+          add(const NoteEvent.getAllNotes());
+        }
       case ResultFailure<void, Failure>(:final failure):
         emit(state.copyWith(errorMessage: failure.message));
     }
   }
 
   Future<void> _updateNote(Note note, Emitter<NoteState> emit) async {
+    if (note.title.trim().isEmpty && note.content.trim().isEmpty) {
+      return;
+    }
+
+    final existingNote = state.notes.firstWhere(
+      (n) => n.id == note.id,
+      orElse: () => note,
+    );
+
+    if (note.title.trim() == existingNote.title.trim() &&
+        note.content.trim() == existingNote.content.trim()) {
+      return;
+    }
+
     final result = await updateNoteUseCase(note);
     switch (result) {
       case ResultSuccess<void, Failure>():
-        add(const NoteEvent.getAllNotes());
+        if (_currentSearchQuery != null && _currentSearchQuery!.isNotEmpty) {
+          add(NoteEvent.searchNotes(_currentSearchQuery!));
+        } else {
+          add(const NoteEvent.getAllNotes());
+        }
       case ResultFailure<void, Failure>(:final failure):
         emit(state.copyWith(errorMessage: failure.message));
     }
