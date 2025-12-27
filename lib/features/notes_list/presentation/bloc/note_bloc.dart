@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -47,6 +49,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   final UpdateNoteUseCase updateNoteUseCase;
 
   String? _currentSearchQuery;
+  Timer? _debounceTimer;
 
   Future<void> _getAllNotes(Emitter<NoteState> emit) async {
     emit(state.copyWith(isLoading: true, errorMessage: null));
@@ -62,16 +65,27 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   }
 
   Future<void> _searchNotes(String query, Emitter<NoteState> emit) async {
-    emit(state.copyWith(isLoading: true, errorMessage: null));
-    _currentSearchQuery = query;
-    final result = await searchNotesUseCase(query);
-    switch (result) {
-      case ResultSuccess<List<Note>, Failure>(:final value):
-        emit(state.copyWith(notes: value, isLoading: false));
+    _debounceTimer?.cancel();
 
-      case ResultFailure<List<Note>, Failure>(:final failure):
-        emit(state.copyWith(isLoading: false, errorMessage: failure.message));
+    if (query.isEmpty) {
+      _currentSearchQuery = null;
+      add(const NoteEvent.getAllNotes());
+      return;
     }
+
+    _currentSearchQuery = query;
+
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+      emit(state.copyWith(isLoading: true, errorMessage: null));
+      final result = await searchNotesUseCase(query);
+      switch (result) {
+        case ResultSuccess<List<Note>, Failure>(:final value):
+          emit(state.copyWith(notes: value, isLoading: false));
+
+        case ResultFailure<List<Note>, Failure>(:final failure):
+          emit(state.copyWith(isLoading: false, errorMessage: failure.message));
+      }
+    });
   }
 
   Future<void> _addNote(Note note, Emitter<NoteState> emit) async {
