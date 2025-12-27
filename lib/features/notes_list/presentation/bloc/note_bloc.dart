@@ -86,7 +86,8 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       if (_searchVersion == searchVersion) {
         _currentSearchQuery = query;
-        unawaited(_performSearch(query, emit, searchVersion));
+        // ignore: unawaited_futures
+        _performSearch(query, emit, searchVersion);
       }
     });
   }
