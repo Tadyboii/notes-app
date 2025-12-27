@@ -73,8 +73,9 @@ void main() {
       blocTest<NoteBloc, NoteState>(
         'should emit [loading, success] when getAllNotes is successful',
         build: () {
-          when(() => mockGetAllNotesUseCase(any()))
-              .thenAnswer((_) async => const ResultSuccess(tNotes));
+          when(
+            () => mockGetAllNotesUseCase(any()),
+          ).thenAnswer((_) async => const ResultSuccess(tNotes));
           return noteBloc;
         },
         act: (bloc) => bloc.add(const NoteEvent.getAllNotes()),
@@ -91,7 +92,7 @@ void main() {
         'should emit [loading, error] when getAllNotes fails',
         build: () {
           when(() => mockGetAllNotesUseCase(any())).thenAnswer(
-                (_) async => const Result.failure(
+            (_) async => const Result.failure(
               UnexpectedFailure(message: 'Failed to fetch notes'),
             ),
           );
@@ -115,10 +116,12 @@ void main() {
       blocTest<NoteBloc, NoteState>(
         'should call getAllNotes when addNote is successful',
         build: () {
-          when(() => mockAddNoteUseCase(any()))
-              .thenAnswer((_) async => const ResultSuccess(null));
-          when(() => mockGetAllNotesUseCase(any()))
-              .thenAnswer((_) async => const ResultSuccess(tNotes));
+          when(
+            () => mockAddNoteUseCase(any()),
+          ).thenAnswer((_) async => const ResultSuccess(null));
+          when(
+            () => mockGetAllNotesUseCase(any()),
+          ).thenAnswer((_) async => const ResultSuccess(tNotes));
           return noteBloc;
         },
         act: (bloc) => bloc.add(const NoteEvent.addNote(tNote)),
@@ -136,7 +139,7 @@ void main() {
         'should emit error when addNote fails',
         build: () {
           when(() => mockAddNoteUseCase(any())).thenAnswer(
-                (_) async => const Result.failure(
+            (_) async => const Result.failure(
               UnexpectedFailure(message: 'Failed to add note'),
             ),
           );
@@ -157,10 +160,12 @@ void main() {
       blocTest<NoteBloc, NoteState>(
         'should call getAllNotes when updateNote is successful',
         build: () {
-          when(() => mockUpdateNoteUseCase(any()))
-              .thenAnswer((_) async => const ResultSuccess(null));
-          when(() => mockGetAllNotesUseCase(any()))
-              .thenAnswer((_) async => const ResultSuccess(tNotes));
+          when(
+            () => mockUpdateNoteUseCase(any()),
+          ).thenAnswer((_) async => const ResultSuccess(null));
+          when(
+            () => mockGetAllNotesUseCase(any()),
+          ).thenAnswer((_) async => const ResultSuccess(tNotes));
           return noteBloc;
         },
         act: (bloc) => bloc.add(const NoteEvent.updateNote(tNote)),
@@ -178,7 +183,7 @@ void main() {
         'should emit error when updateNote fails',
         build: () {
           when(() => mockUpdateNoteUseCase(any())).thenAnswer(
-                (_) async => const Result.failure(
+            (_) async => const Result.failure(
               UnexpectedFailure(message: 'Failed to update note'),
             ),
           );
@@ -201,10 +206,12 @@ void main() {
       blocTest<NoteBloc, NoteState>(
         'should call getAllNotes when deleteNote is successful',
         build: () {
-          when(() => mockDeleteNoteUseCase(any()))
-              .thenAnswer((_) async => const ResultSuccess(null));
-          when(() => mockGetAllNotesUseCase(any()))
-              .thenAnswer((_) async => const ResultSuccess(tNotes));
+          when(
+            () => mockDeleteNoteUseCase(any()),
+          ).thenAnswer((_) async => const ResultSuccess(null));
+          when(
+            () => mockGetAllNotesUseCase(any()),
+          ).thenAnswer((_) async => const ResultSuccess(tNotes));
           return noteBloc;
         },
         act: (bloc) => bloc.add(const NoteEvent.deleteNote(tNoteId)),
@@ -222,7 +229,7 @@ void main() {
         'should emit error when deleteNote fails',
         build: () {
           when(() => mockDeleteNoteUseCase(any())).thenAnswer(
-                (_) async => const Result.failure(
+            (_) async => const Result.failure(
               UnexpectedFailure(message: 'Failed to delete note'),
             ),
           );
@@ -245,8 +252,9 @@ void main() {
       blocTest<NoteBloc, NoteState>(
         'should emit [loading, success] when searchNotes is successful',
         build: () {
-          when(() => mockSearchNotesUseCase(tQuery))
-              .thenAnswer((_) async => const ResultSuccess(tNotes));
+          when(
+            () => mockSearchNotesUseCase(tQuery),
+          ).thenAnswer((_) async => const ResultSuccess(tNotes));
           return noteBloc;
         },
         act: (bloc) => bloc.add(const NoteEvent.searchNotes(tQuery)),
@@ -262,7 +270,7 @@ void main() {
         'should emit [loading, error] when searchNotes fails',
         build: () {
           when(() => mockSearchNotesUseCase(tQuery)).thenAnswer(
-                (_) async => const Result.failure(
+            (_) async => const Result.failure(
               UnexpectedFailure(message: 'Failed to search notes'),
             ),
           );

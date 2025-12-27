@@ -89,13 +89,13 @@ void main() {
 
         when(() => mockUuid.v4()).thenReturn(generatedId);
         when(
-              () => mockBox.put(any<String>(), any<NoteModel>()),
+          () => mockBox.put(any<String>(), any<NoteModel>()),
         ).thenAnswer((_) async {});
 
         await dataSource.addNote(testNote);
 
         final captured = verify(
-              () => mockBox.put(
+          () => mockBox.put(
             captureAny<String>(),
             captureAny<NoteModel>(),
           ),
@@ -125,7 +125,7 @@ void main() {
         );
 
         when(
-              () => mockBox.put(any<String>(), any<NoteModel>()),
+          () => mockBox.put(any<String>(), any<NoteModel>()),
         ).thenAnswer((_) async {});
 
         await dataSource.updateNote(testNote);

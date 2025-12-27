@@ -73,9 +73,10 @@ void main() {
 
       test(
         'returns success with mapped Note entities when call succeeds',
-            () async {
-          when(() => mockDataSource.getAllNotes())
-              .thenAnswer((_) async => testModels);
+        () async {
+          when(
+            () => mockDataSource.getAllNotes(),
+          ).thenAnswer((_) async => testModels);
 
           final result = await repository.getAllNotes();
 
@@ -95,9 +96,10 @@ void main() {
 
       test(
         'returns CacheFailure when data source throws CacheException',
-            () async {
-          when(() => mockDataSource.getAllNotes())
-              .thenThrow(const CacheException('Failed to load notes'));
+        () async {
+          when(
+            () => mockDataSource.getAllNotes(),
+          ).thenThrow(const CacheException('Failed to load notes'));
 
           final result = await repository.getAllNotes();
 
@@ -111,9 +113,10 @@ void main() {
 
       test(
         'returns UnexpectedFailure when data source throws generic exception',
-            () async {
-          when(() => mockDataSource.getAllNotes())
-              .thenThrow(Exception('Unexpected error'));
+        () async {
+          when(
+            () => mockDataSource.getAllNotes(),
+          ).thenThrow(Exception('Unexpected error'));
 
           final result = await repository.getAllNotes();
 
@@ -137,8 +140,9 @@ void main() {
       );
 
       test('returns success when note is added successfully', () async {
-        when(() => mockDataSource.addNote(any()))
-            .thenAnswer((_) async => Future.value());
+        when(
+          () => mockDataSource.addNote(any()),
+        ).thenAnswer((_) async => Future.value());
 
         final result = await repository.addNote(testNote);
 
@@ -154,8 +158,9 @@ void main() {
           createdAt: now,
           updatedAt: now,
         );
-        when(() => mockDataSource.addNote(any()))
-            .thenAnswer((_) async => Future.value());
+        when(
+          () => mockDataSource.addNote(any()),
+        ).thenAnswer((_) async => Future.value());
 
         await repository.addNote(testNote);
 
@@ -164,9 +169,10 @@ void main() {
 
       test(
         'returns CacheFailure when data source throws CacheException',
-            () async {
-          when(() => mockDataSource.addNote(any()))
-              .thenThrow(const CacheException('Failed to save note'));
+        () async {
+          when(
+            () => mockDataSource.addNote(any()),
+          ).thenThrow(const CacheException('Failed to save note'));
 
           final result = await repository.addNote(testNote);
 
@@ -180,9 +186,10 @@ void main() {
 
       test(
         'returns UnexpectedFailure when data source throws generic exception',
-            () async {
-          when(() => mockDataSource.addNote(any()))
-              .thenThrow(Exception('Unexpected error'));
+        () async {
+          when(
+            () => mockDataSource.addNote(any()),
+          ).thenThrow(Exception('Unexpected error'));
 
           final result = await repository.addNote(testNote);
 
@@ -205,8 +212,9 @@ void main() {
       );
 
       test('returns success when note is updated successfully', () async {
-        when(() => mockDataSource.updateNote(any()))
-            .thenAnswer((_) async => Future.value());
+        when(
+          () => mockDataSource.updateNote(any()),
+        ).thenAnswer((_) async => Future.value());
 
         final result = await repository.updateNote(testNote);
 
@@ -222,8 +230,9 @@ void main() {
           createdAt: now,
           updatedAt: now,
         );
-        when(() => mockDataSource.updateNote(any()))
-            .thenAnswer((_) async => Future.value());
+        when(
+          () => mockDataSource.updateNote(any()),
+        ).thenAnswer((_) async => Future.value());
 
         await repository.updateNote(testNote);
 
@@ -232,9 +241,10 @@ void main() {
 
       test(
         'returns CacheFailure when data source throws CacheException',
-            () async {
-          when(() => mockDataSource.updateNote(any()))
-              .thenThrow(const CacheException('Failed to update note'));
+        () async {
+          when(
+            () => mockDataSource.updateNote(any()),
+          ).thenThrow(const CacheException('Failed to update note'));
 
           final result = await repository.updateNote(testNote);
 
@@ -248,9 +258,10 @@ void main() {
 
       test(
         'returns UnexpectedFailure when data source throws generic exception',
-            () async {
-          when(() => mockDataSource.updateNote(any()))
-              .thenThrow(Exception('Unexpected error'));
+        () async {
+          when(
+            () => mockDataSource.updateNote(any()),
+          ).thenThrow(Exception('Unexpected error'));
 
           final result = await repository.updateNote(testNote);
 
@@ -267,8 +278,9 @@ void main() {
       const testNoteId = '1';
 
       test('returns success when note is deleted successfully', () async {
-        when(() => mockDataSource.deleteNote(any()))
-            .thenAnswer((_) async => Future.value());
+        when(
+          () => mockDataSource.deleteNote(any()),
+        ).thenAnswer((_) async => Future.value());
 
         final result = await repository.deleteNote(testNoteId);
 
@@ -277,8 +289,9 @@ void main() {
       });
 
       test('calls data source with correct note id', () async {
-        when(() => mockDataSource.deleteNote(any()))
-            .thenAnswer((_) async => Future.value());
+        when(
+          () => mockDataSource.deleteNote(any()),
+        ).thenAnswer((_) async => Future.value());
 
         await repository.deleteNote(testNoteId);
 
@@ -287,9 +300,10 @@ void main() {
 
       test(
         'returns CacheFailure when data source throws CacheException',
-            () async {
-          when(() => mockDataSource.deleteNote(any()))
-              .thenThrow(const CacheException('Failed to delete note'));
+        () async {
+          when(
+            () => mockDataSource.deleteNote(any()),
+          ).thenThrow(const CacheException('Failed to delete note'));
 
           final result = await repository.deleteNote(testNoteId);
 
@@ -303,9 +317,10 @@ void main() {
 
       test(
         'returns UnexpectedFailure when data source throws generic exception',
-            () async {
-          when(() => mockDataSource.deleteNote(any()))
-              .thenThrow(Exception('Unexpected error'));
+        () async {
+          when(
+            () => mockDataSource.deleteNote(any()),
+          ).thenThrow(Exception('Unexpected error'));
 
           final result = await repository.deleteNote(testNoteId);
 
