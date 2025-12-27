@@ -51,6 +51,12 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   String? _currentSearchQuery;
   Timer? _debounceTimer;
 
+  @override
+  Future<void> close() {
+    _debounceTimer?.cancel();
+    return super.close();
+  }
+
   Future<void> _getAllNotes(Emitter<NoteState> emit) async {
     emit(state.copyWith(isLoading: true, errorMessage: null));
     _currentSearchQuery = null;
@@ -69,23 +75,27 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
 
     if (query.isEmpty) {
       _currentSearchQuery = null;
-      add(const NoteEvent.getAllNotes());
+      await _getAllNotes(emit);
       return;
     }
 
     _currentSearchQuery = query;
 
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
-      emit(state.copyWith(isLoading: true, errorMessage: null));
-      final result = await searchNotesUseCase(query);
-      switch (result) {
-        case ResultSuccess<List<Note>, Failure>(:final value):
-          emit(state.copyWith(notes: value, isLoading: false));
-
-        case ResultFailure<List<Note>, Failure>(:final failure):
-          emit(state.copyWith(isLoading: false, errorMessage: failure.message));
-      }
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _performSearch(query, emit);
     });
+  }
+
+  Future<void> _performSearch(String query, Emitter<NoteState> emit) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+    final result = await searchNotesUseCase(query);
+    switch (result) {
+      case ResultSuccess<List<Note>, Failure>(:final value):
+        emit(state.copyWith(notes: value, isLoading: false));
+
+      case ResultFailure<List<Note>, Failure>(:final failure):
+        emit(state.copyWith(isLoading: false, errorMessage: failure.message));
+    }
   }
 
   Future<void> _addNote(Note note, Emitter<NoteState> emit) async {
