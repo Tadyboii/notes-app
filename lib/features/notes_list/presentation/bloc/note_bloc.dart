@@ -50,6 +50,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
 
   String? _currentSearchQuery;
   Timer? _debounceTimer;
+  int _searchVersion = 0;
 
   @override
   Future<void> close() {
@@ -79,26 +80,35 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       return;
     }
 
+    _searchVersion++;
+    final searchVersion = _searchVersion;
+
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-      _currentSearchQuery = query;
-      _performSearch(query, emit);
+      if (_searchVersion == searchVersion) {
+        _currentSearchQuery = query;
+        unawaited(_performSearch(query, emit, searchVersion));
+      }
     });
   }
 
-  Future<void> _performSearch(String query, Emitter<NoteState> emit) async {
+  Future<void> _performSearch(
+    String query,
+    Emitter<NoteState> emit,
+    int searchVersion,
+  ) async {
     // Check if this search is still relevant
-    if (_currentSearchQuery != query) {
+    if (_searchVersion != searchVersion) {
       return;
     }
 
     emit(state.copyWith(isLoading: true, errorMessage: null));
     final result = await searchNotesUseCase(query);
-    
+
     // Check again if the query is still current
-    if (_currentSearchQuery != query) {
+    if (_searchVersion != searchVersion) {
       return;
     }
-    
+
     switch (result) {
       case ResultSuccess<List<Note>, Failure>(:final value):
         emit(state.copyWith(notes: value, isLoading: false));
