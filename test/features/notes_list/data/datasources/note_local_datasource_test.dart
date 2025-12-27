@@ -146,31 +146,34 @@ void main() {
     });
 
     group('searchNotes', () {
-      test('returns list of notes matching query sorted by updatedAt descending', () async {
-        final now = DateTime.now();
-        final note1 = NoteModel(
-          id: '1',
-          title: 'Shopping List',
-          content: 'Buy milk and eggs',
-          createdAt: now.subtract(const Duration(days: 2)),
-          updatedAt: now.subtract(const Duration(days: 1)),
-        );
-        final note2 = NoteModel(
-          id: '2',
-          title: 'Work Tasks',
-          content: 'Finish the report',
-          createdAt: now.subtract(const Duration(days: 1)),
-          updatedAt: now,
-        );
+      test(
+        'returns list of notes matching query sorted by updatedAt descending',
+        () async {
+          final now = DateTime.now();
+          final note1 = NoteModel(
+            id: '1',
+            title: 'Shopping List',
+            content: 'Buy milk and eggs',
+            createdAt: now.subtract(const Duration(days: 2)),
+            updatedAt: now.subtract(const Duration(days: 1)),
+          );
+          final note2 = NoteModel(
+            id: '2',
+            title: 'Work Tasks',
+            content: 'Finish the report',
+            createdAt: now.subtract(const Duration(days: 1)),
+            updatedAt: now,
+          );
 
-        when(() => mockBox.values).thenReturn([note1, note2]);
+          when(() => mockBox.values).thenReturn([note1, note2]);
 
-        final result = await dataSource.searchNotes('milk');
+          final result = await dataSource.searchNotes('milk');
 
-        expect(result.length, 1);
-        expect(result[0].id, '1');
-        verify(() => mockBox.values).called(1);
-      });
+          expect(result.length, 1);
+          expect(result[0].id, '1');
+          verify(() => mockBox.values).called(1);
+        },
+      );
 
       test('returns empty list when no notes match query', () async {
         final now = DateTime.now();

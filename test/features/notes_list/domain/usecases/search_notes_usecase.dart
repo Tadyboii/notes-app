@@ -36,10 +36,10 @@ void main() {
 
       test(
         'returns success with matching notes when search succeeds',
-            () async {
+        () async {
           // Arrange
           when(
-                () => mockRepository.searchNotes(testQuery),
+            () => mockRepository.searchNotes(testQuery),
           ).thenAnswer((_) async => Result(testNotes));
 
           // Act
@@ -54,7 +54,7 @@ void main() {
       test('returns success with empty list when no matches found', () async {
         // Arrange
         when(
-              () => mockRepository.searchNotes(testQuery),
+          () => mockRepository.searchNotes(testQuery),
         ).thenAnswer((_) async => const Result([]));
 
         // Act
@@ -69,7 +69,7 @@ void main() {
         // Arrange
         const emptyQuery = '';
         when(
-              () => mockRepository.searchNotes(emptyQuery),
+          () => mockRepository.searchNotes(emptyQuery),
         ).thenAnswer((_) async => const Result([]));
 
         // Act
@@ -84,7 +84,7 @@ void main() {
         // Arrange
         const failure = ServerFailure(message: 'Failed to search notes');
         when(
-              () => mockRepository.searchNotes(testQuery),
+          () => mockRepository.searchNotes(testQuery),
         ).thenAnswer((_) async => const Result.failure(failure));
 
         // Act
@@ -104,7 +104,7 @@ void main() {
           message: 'Failed to search notes from cache',
         );
         when(
-              () => mockRepository.searchNotes(testQuery),
+          () => mockRepository.searchNotes(testQuery),
         ).thenAnswer((_) async => const Result.failure(failure));
 
         // Act
@@ -120,11 +120,11 @@ void main() {
 
       test(
         'returns NetworkFailure when there is no internet connection',
-            () async {
+        () async {
           // Arrange
           const failure = NetworkFailure(message: 'No internet connection');
           when(
-                () => mockRepository.searchNotes(testQuery),
+            () => mockRepository.searchNotes(testQuery),
           ).thenAnswer((_) async => const Result.failure(failure));
 
           // Act
@@ -143,7 +143,7 @@ void main() {
         // Arrange
         const failure = UnexpectedFailure(message: 'Unexpected error occurred');
         when(
-              () => mockRepository.searchNotes(testQuery),
+          () => mockRepository.searchNotes(testQuery),
         ).thenAnswer((_) async => const Result.failure(failure));
 
         // Act

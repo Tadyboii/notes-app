@@ -332,5 +332,91 @@ void main() {
         },
       );
     });
+
+    //   search notes
+    group('searchNotes', () {
+      final testQuery = 'Test';
+      final testModels = [
+        NoteModel(
+          id: '1',
+          title: 'Test Note 1',
+          content: 'Content 1',
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ];
+
+      final testNotes = [
+        Note(
+          id: '1',
+          title: 'Test Note 1',
+          content: 'Content 1',
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ];
+
+      test(
+        'returns success with mapped Note entities when call succeeds',
+        () async {
+          when(
+            () => mockDataSource.searchNotes(testQuery),
+          ).thenAnswer((_) async => testModels);
+
+          final result = await repository.searchNotes(testQuery);
+
+          expect(result, equals(Result<List<Note>, Failure>(testNotes)));
+          verify(() => mockDataSource.searchNotes(testQuery)).called(1);
+        },
+      );
+
+      test(
+        'returns success with empty list when no matching notes exist',
+        () async {
+          when(
+            () => mockDataSource.searchNotes(testQuery),
+          ).thenAnswer((_) async => []);
+
+          final result = await repository.searchNotes(testQuery);
+
+          expect(result, equals(const Result<List<Note>, Failure>([])));
+          verify(() => mockDataSource.searchNotes(testQuery)).called(1);
+        },
+      );
+
+      test(
+        'returns CacheFailure when data source throws CacheException',
+        () async {
+          when(
+            () => mockDataSource.searchNotes(testQuery),
+          ).thenThrow(const CacheException('Failed to search notes'));
+
+          final result = await repository.searchNotes(testQuery);
+
+          expect(result, isA<ResultFailure<List<Note>, Failure>>());
+          final failure = (result as ResultFailure).failure;
+          expect(failure, isA<CacheFailure>());
+          expect(failure.message, 'Failed to search notes');
+          verify(() => mockDataSource.searchNotes(testQuery)).called(1);
+        },
+      );
+
+      test(
+        'returns UnexpectedFailure when data source throws generic exception',
+        () async {
+          when(
+            () => mockDataSource.searchNotes(testQuery),
+          ).thenThrow(Exception('Unexpected error'));
+
+          final result = await repository.searchNotes(testQuery);
+
+          expect(result, isA<ResultFailure<List<Note>, Failure>>());
+          final failure = (result as ResultFailure).failure;
+          expect(failure, isA<UnexpectedFailure>());
+          expect(failure.message, contains('Exception'));
+          verify(() => mockDataSource.searchNotes(testQuery)).called(1);
+        },
+      );
+    });
   });
 }
