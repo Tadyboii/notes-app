@@ -85,7 +85,6 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
 
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       if (_searchVersion == searchVersion) {
-        _currentSearchQuery = query;
         // ignore: unawaited_futures
         _performSearch(query, emit, searchVersion);
       }
@@ -102,6 +101,7 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
       return;
     }
 
+    _currentSearchQuery = query;
     emit(state.copyWith(isLoading: true, errorMessage: null));
     final result = await searchNotesUseCase(query);
 
