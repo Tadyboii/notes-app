@@ -258,6 +258,7 @@ void main() {
           return noteBloc;
         },
         act: (bloc) => bloc.add(const NoteEvent.searchNotes(tQuery)),
+        wait: const Duration(milliseconds: 600),
         expect: () => [
           NoteState.initial().copyWith(isLoading: true, errorMessage: null),
           NoteState.initial().copyWith(notes: tNotes, isLoading: false),
@@ -277,6 +278,7 @@ void main() {
           return noteBloc;
         },
         act: (bloc) => bloc.add(const NoteEvent.searchNotes(tQuery)),
+        wait: const Duration(milliseconds: 600),
         expect: () => [
           NoteState.initial().copyWith(isLoading: true, errorMessage: null),
           NoteState.initial().copyWith(
@@ -286,6 +288,53 @@ void main() {
         ],
         verify: (_) {
           verify(() => mockSearchNotesUseCase(tQuery)).called(1);
+        },
+      );
+
+      blocTest<NoteBloc, NoteState>(
+        'should call getAllNotes when search query is empty',
+        build: () {
+          when(
+            () => mockGetAllNotesUseCase(any()),
+          ).thenAnswer((_) async => const ResultSuccess(tNotes));
+          return noteBloc;
+        },
+        act: (bloc) => bloc.add(const NoteEvent.searchNotes('')),
+        expect: () => [
+          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteState.initial().copyWith(notes: tNotes, isLoading: false),
+        ],
+        verify: (_) {
+          verify(() => mockGetAllNotesUseCase(any())).called(1);
+          verifyNever(() => mockSearchNotesUseCase(any()));
+        },
+      );
+
+      blocTest<NoteBloc, NoteState>(
+        'should debounce multiple search events',
+        build: () {
+          when(
+            () => mockSearchNotesUseCase(any()),
+          ).thenAnswer((_) async => const ResultSuccess(tNotes));
+          return noteBloc;
+        },
+        act: (bloc) {
+          bloc.add(const NoteEvent.searchNotes('T'));
+          bloc.add(const NoteEvent.searchNotes('Te'));
+          bloc.add(const NoteEvent.searchNotes('Tes'));
+          bloc.add(const NoteEvent.searchNotes('Test'));
+        },
+        wait: const Duration(milliseconds: 600),
+        expect: () => [
+          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteState.initial().copyWith(notes: tNotes, isLoading: false),
+        ],
+        verify: (_) {
+          // Only the last search should be called after debounce
+          verify(() => mockSearchNotesUseCase('Test')).called(1);
+          verifyNever(() => mockSearchNotesUseCase('T'));
+          verifyNever(() => mockSearchNotesUseCase('Te'));
+          verifyNever(() => mockSearchNotesUseCase('Tes'));
         },
       );
     });

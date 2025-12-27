@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -47,6 +49,14 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   final UpdateNoteUseCase updateNoteUseCase;
 
   String? _currentSearchQuery;
+  Timer? _debounceTimer;
+  int _searchVersion = 0;
+
+  @override
+  Future<void> close() {
+    _debounceTimer?.cancel();
+    return super.close();
+  }
 
   Future<void> _getAllNotes(Emitter<NoteState> emit) async {
     emit(state.copyWith(isLoading: true, errorMessage: null));
@@ -62,9 +72,44 @@ class NoteBloc extends Bloc<NoteEvent, NoteState> {
   }
 
   Future<void> _searchNotes(String query, Emitter<NoteState> emit) async {
-    emit(state.copyWith(isLoading: true, errorMessage: null));
+    _debounceTimer?.cancel();
+
+    if (query.isEmpty) {
+      _currentSearchQuery = null;
+      await _getAllNotes(emit);
+      return;
+    }
+
+    _searchVersion++;
+    final searchVersion = _searchVersion;
+
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (_searchVersion == searchVersion) {
+        // ignore: unawaited_futures
+        _performSearch(query, emit, searchVersion);
+      }
+    });
+  }
+
+  Future<void> _performSearch(
+    String query,
+    Emitter<NoteState> emit,
+    int searchVersion,
+  ) async {
+    // Check if this search is still relevant
+    if (_searchVersion != searchVersion) {
+      return;
+    }
+
     _currentSearchQuery = query;
+    emit(state.copyWith(isLoading: true, errorMessage: null));
     final result = await searchNotesUseCase(query);
+
+    // Check again if the query is still current
+    if (_searchVersion != searchVersion) {
+      return;
+    }
+
     switch (result) {
       case ResultSuccess<List<Note>, Failure>(:final value):
         emit(state.copyWith(notes: value, isLoading: false));
