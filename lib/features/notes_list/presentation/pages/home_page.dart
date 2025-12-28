@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
-import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
+import 'package:notes_app/features/notes_list/presentation/bloc/note_list_bloc.dart';
 import 'package:notes_app/features/notes_list/presentation/pages/edit_note_page.dart';
 import 'package:notes_app/features/notes_list/presentation/widget/note_search_bar_widget.dart';
 import 'package:notes_app/features/notes_list/presentation/widget/note_tile_widget.dart';
@@ -36,12 +36,12 @@ class _NoteListView extends StatelessWidget {
             NoteSearchBarWidget(
               onSearchChanged: (query) {
                 context.read<NoteBloc>().add(
-                  NoteEvent.searchNotes(query),
+                  NoteListEvent.searchNotes(query),
                 );
               },
             ),
             Expanded(
-              child: BlocBuilder<NoteBloc, NoteState>(
+              child: BlocBuilder<NoteBloc, NoteListState>(
                 builder: (context, state) {
                   if (state.errorMessage != null) {
                     return Center(
@@ -65,7 +65,7 @@ class _NoteListView extends StatelessWidget {
                     color: Theme.of(context).colorScheme.primary,
                     onRefresh: () async {
                       context.read<NoteBloc>().add(
-                        const NoteEvent.getAllNotes(),
+                        const NoteListEvent.getAllNotes(),
                       );
                     },
                     child: ListView.separated(
@@ -157,7 +157,7 @@ class _NoteListView extends StatelessWidget {
                     return;
                   }
                   context.read<NoteBloc>().add(
-                    NoteEvent.deleteNote(noteId),
+                    NoteListEvent.deleteNote(noteId),
                   );
                 },
               ),

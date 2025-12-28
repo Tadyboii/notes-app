@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notes_app/core/di/injection_container.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 import 'package:notes_app/features/notes_list/presentation/bloc/edit_note_bloc.dart';
-import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
+import 'package:notes_app/features/notes_list/presentation/bloc/note_list_bloc.dart';
 
 class EditNotePage extends StatelessWidget {
   const EditNotePage({super.key, this.note});
@@ -53,7 +53,7 @@ class _EditNoteViewState extends State<EditNoteView> {
       listener: (context, state) async {
         if (state.isDeleting) {
           context.read<NoteBloc>().add(
-            NoteEvent.deleteNote(state.noteId),
+            NoteListEvent.deleteNote(state.noteId),
           );
           Navigator.of(context).pop();
         }

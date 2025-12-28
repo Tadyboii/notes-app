@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notes_app/core/di/injection_container.dart';
-import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
+import 'package:notes_app/features/notes_list/presentation/bloc/note_list_bloc.dart';
 import 'package:notes_app/features/notes_list/presentation/pages/home_page.dart';
 
 class NotesApp extends StatelessWidget {
@@ -12,7 +12,8 @@ class NotesApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<NoteBloc>(
-          create: (_) => getIt<NoteBloc>()..add(const NoteEvent.getAllNotes()),
+          create: (_) =>
+              getIt<NoteBloc>()..add(const NoteListEvent.getAllNotes()),
         ),
       ],
       child: MaterialApp(

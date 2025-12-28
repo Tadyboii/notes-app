@@ -8,7 +8,7 @@ import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/delete_note_usecase.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/get_all_notes_usecase.dart';
 import 'package:notes_app/features/notes_list/domain/usecases/search_notes_usecase.dart';
-import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
+import 'package:notes_app/features/notes_list/presentation/bloc/note_list_bloc.dart';
 
 class MockGetAllNotesUseCase extends Mock implements GetAllNotesUseCase {}
 
@@ -54,11 +54,11 @@ void main() {
     const tNotes = [tNote];
 
     test('initial state should be NoteState.initial()', () {
-      expect(noteBloc.state, equals(NoteState.initial()));
+      expect(noteBloc.state, equals(NoteListState.initial()));
     });
 
     group('GetAllNotes', () {
-      blocTest<NoteBloc, NoteState>(
+      blocTest<NoteBloc, NoteListState>(
         'should emit [loading, success] when getAllNotes is successful',
         build: () {
           when(
@@ -66,17 +66,17 @@ void main() {
           ).thenAnswer((_) async => const ResultSuccess(tNotes));
           return noteBloc;
         },
-        act: (bloc) => bloc.add(const NoteEvent.getAllNotes()),
+        act: (bloc) => bloc.add(const NoteListEvent.getAllNotes()),
         expect: () => [
-          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
-          NoteState.initial().copyWith(notes: tNotes, isLoading: false),
+          NoteListState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteListState.initial().copyWith(notes: tNotes, isLoading: false),
         ],
         verify: (_) {
           verify(() => mockGetAllNotesUseCase(any())).called(1);
         },
       );
 
-      blocTest<NoteBloc, NoteState>(
+      blocTest<NoteBloc, NoteListState>(
         'should emit [loading, error] when getAllNotes fails',
         build: () {
           when(() => mockGetAllNotesUseCase(any())).thenAnswer(
@@ -86,10 +86,10 @@ void main() {
           );
           return noteBloc;
         },
-        act: (bloc) => bloc.add(const NoteEvent.getAllNotes()),
+        act: (bloc) => bloc.add(const NoteListEvent.getAllNotes()),
         expect: () => [
-          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
-          NoteState.initial().copyWith(
+          NoteListState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteListState.initial().copyWith(
             isLoading: false,
             errorMessage: 'Failed to fetch notes',
           ),
@@ -103,7 +103,7 @@ void main() {
     group('DeleteNote', () {
       const tNoteId = '1';
 
-      blocTest<NoteBloc, NoteState>(
+      blocTest<NoteBloc, NoteListState>(
         'should call getAllNotes when deleteNote is successful',
         build: () {
           when(
@@ -114,10 +114,10 @@ void main() {
           ).thenAnswer((_) async => const ResultSuccess(tNotes));
           return noteBloc;
         },
-        act: (bloc) => bloc.add(const NoteEvent.deleteNote(tNoteId)),
+        act: (bloc) => bloc.add(const NoteListEvent.deleteNote(tNoteId)),
         expect: () => [
-          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
-          NoteState.initial().copyWith(notes: tNotes, isLoading: false),
+          NoteListState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteListState.initial().copyWith(notes: tNotes, isLoading: false),
         ],
         verify: (_) {
           verify(() => mockDeleteNoteUseCase(any())).called(1);
@@ -125,7 +125,7 @@ void main() {
         },
       );
 
-      blocTest<NoteBloc, NoteState>(
+      blocTest<NoteBloc, NoteListState>(
         'should emit error when deleteNote fails',
         build: () {
           when(() => mockDeleteNoteUseCase(any())).thenAnswer(
@@ -135,12 +135,12 @@ void main() {
           );
           return noteBloc;
         },
-        act: (bloc) => bloc.add(const NoteEvent.deleteNote(tNoteId)),
+        act: (bloc) => bloc.add(const NoteListEvent.deleteNote(tNoteId)),
         // Updated expectation to match current bloc emissions:
         // first loading, then error (bloc currently leaves isLoading == true)
         expect: () => [
-          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
-          NoteState.initial().copyWith(
+          NoteListState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteListState.initial().copyWith(
             isLoading: true,
             errorMessage: 'Failed to delete note',
           ),
@@ -155,7 +155,7 @@ void main() {
     group('SearchNotes', () {
       const tQuery = 'Test';
 
-      blocTest<NoteBloc, NoteState>(
+      blocTest<NoteBloc, NoteListState>(
         'should emit [loading, success] when searchNotes is successful',
         build: () {
           when(
@@ -163,17 +163,17 @@ void main() {
           ).thenAnswer((_) async => const ResultSuccess(tNotes));
           return noteBloc;
         },
-        act: (bloc) => bloc.add(const NoteEvent.searchNotes(tQuery)),
+        act: (bloc) => bloc.add(const NoteListEvent.searchNotes(tQuery)),
         expect: () => [
-          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
-          NoteState.initial().copyWith(notes: tNotes, isLoading: false),
+          NoteListState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteListState.initial().copyWith(notes: tNotes, isLoading: false),
         ],
         verify: (_) {
           verify(() => mockSearchNotesUseCase(tQuery)).called(1);
         },
       );
 
-      blocTest<NoteBloc, NoteState>(
+      blocTest<NoteBloc, NoteListState>(
         'should emit [loading, error] when searchNotes fails',
         build: () {
           when(() => mockSearchNotesUseCase(tQuery)).thenAnswer(
@@ -183,10 +183,10 @@ void main() {
           );
           return noteBloc;
         },
-        act: (bloc) => bloc.add(const NoteEvent.searchNotes(tQuery)),
+        act: (bloc) => bloc.add(const NoteListEvent.searchNotes(tQuery)),
         expect: () => [
-          NoteState.initial().copyWith(isLoading: true, errorMessage: null),
-          NoteState.initial().copyWith(
+          NoteListState.initial().copyWith(isLoading: true, errorMessage: null),
+          NoteListState.initial().copyWith(
             isLoading: false,
             errorMessage: 'Failed to search notes',
           ),
