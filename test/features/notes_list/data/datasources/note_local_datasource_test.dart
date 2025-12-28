@@ -3,17 +3,12 @@ import 'package:hive/hive.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:notes_app/features/notes_list/data/datasources/note_local_datasource_impl.dart';
 import 'package:notes_app/features/notes_list/data/models/note_model.dart';
-import 'package:uuid/uuid.dart';
 
-// Mock classes
 class MockBox extends Mock implements Box<NoteModel> {}
-
-class MockUuid extends Mock implements Uuid {}
 
 void main() {
   late NoteLocalDataSourceImpl dataSource;
   late MockBox mockBox;
-  late MockUuid mockUuid;
 
   setUpAll(() {
     registerFallbackValue(
@@ -29,10 +24,8 @@ void main() {
 
   setUp(() {
     mockBox = MockBox();
-    mockUuid = MockUuid();
     dataSource = NoteLocalDataSourceImpl(
       notesBox: mockBox,
-      uuid: mockUuid,
     );
   });
 
@@ -76,40 +69,23 @@ void main() {
     });
 
     group('addNote', () {
-      test('adds note with generated UUID and timestamps', () async {
+      test('adds note using provided id and timestamps', () async {
         final now = DateTime.now();
-        const generatedId = 'uuid-1234';
         final testNote = NoteModel(
-          id: '',
+          id: 'note-1',
           title: 'New Note',
           content: 'New Content',
           createdAt: now,
           updatedAt: now,
         );
 
-        when(() => mockUuid.v4()).thenReturn(generatedId);
         when(
-          () => mockBox.put(any<String>(), any<NoteModel>()),
+              () => mockBox.put(any<String>(), any<NoteModel>()),
         ).thenAnswer((_) async {});
 
         await dataSource.addNote(testNote);
 
-        final captured = verify(
-          () => mockBox.put(
-            captureAny<String>(),
-            captureAny<NoteModel>(),
-          ),
-        ).captured;
-
-        expect(captured.length, 2);
-        expect(captured[0], generatedId);
-
-        final capturedNote = captured[1] as NoteModel;
-        expect(capturedNote.id, generatedId);
-        expect(capturedNote.title, 'New Note');
-        expect(capturedNote.content, 'New Content');
-        expect(capturedNote.createdAt, now);
-        expect(capturedNote.updatedAt, now);
+        verify(() => mockBox.put(testNote.id, testNote)).called(1);
       });
     });
 
@@ -125,7 +101,7 @@ void main() {
         );
 
         when(
-          () => mockBox.put(any<String>(), any<NoteModel>()),
+              () => mockBox.put(any<String>(), any<NoteModel>()),
         ).thenAnswer((_) async {});
 
         await dataSource.updateNote(testNote);
@@ -148,7 +124,7 @@ void main() {
     group('searchNotes', () {
       test(
         'returns list of notes matching query sorted by updatedAt descending',
-        () async {
+            () async {
           final now = DateTime.now();
           final note1 = NoteModel(
             id: '1',

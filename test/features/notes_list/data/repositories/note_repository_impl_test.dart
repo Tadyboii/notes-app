@@ -7,18 +7,21 @@ import 'package:notes_app/features/notes_list/data/datasources/note_local_dataso
 import 'package:notes_app/features/notes_list/data/models/note_model.dart';
 import 'package:notes_app/features/notes_list/data/repositories/note_repository_impl.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
+import 'package:notes_app/features/notes_list/domain/mapper/note_mapper.dart';
+import 'package:uuid/uuid.dart';
 
-// Mock data source
 class MockNoteLocalDataSource extends Mock implements NoteLocalDataSource {}
+
+class MockUuid extends Mock implements Uuid {}
 
 void main() {
   late NoteRepositoryImpl repository;
   late MockNoteLocalDataSource mockDataSource;
+  late MockUuid mockUuid;
 
   final now = DateTime.now();
 
   setUpAll(() {
-    // Register fallback values for custom types
     registerFallbackValue(
       NoteModel(
         id: '',
@@ -32,7 +35,8 @@ void main() {
 
   setUp(() {
     mockDataSource = MockNoteLocalDataSource();
-    repository = NoteRepositoryImpl(mockDataSource);
+    mockUuid = MockUuid();
+    repository = NoteRepositoryImpl(mockDataSource, mockUuid);
   });
 
   group('NoteRepositoryImpl', () {
@@ -54,22 +58,7 @@ void main() {
         ),
       ];
 
-      final testNotes = [
-        Note(
-          id: '1',
-          title: 'Test Note 1',
-          content: 'Content 1',
-          createdAt: now,
-          updatedAt: now,
-        ),
-        Note(
-          id: '2',
-          title: 'Test Note 2',
-          content: 'Content 2',
-          createdAt: now,
-          updatedAt: now,
-        ),
-      ];
+      final testNotes = testModels.map((m) => m.toDomain()).toList();
 
       test(
         'returns success with mapped Note entities when call succeeds',
@@ -131,73 +120,72 @@ void main() {
     });
 
     group('addNote', () {
-      final testNote = Note(
-        id: '1',
+      final inputNote = Note(
+        id: 'ignored',
         title: 'New Note',
         content: 'New Content',
         createdAt: now,
         updatedAt: now,
       );
 
-      test('returns success when note is added successfully', () async {
+      test('adds note and returns created Note entity', () async {
+        const generatedId = 'uuid-1234';
+        when(() => mockUuid.v4()).thenReturn(generatedId);
         when(
           () => mockDataSource.addNote(any()),
         ).thenAnswer((_) async => Future.value());
 
-        final result = await repository.addNote(testNote);
+        final result = await repository.addNote(inputNote);
 
-        expect(result, equals(const Result<void, Failure>(null)));
-        verify(() => mockDataSource.addNote(any())).called(1);
-      });
+        final captured = verify(
+          () => mockDataSource.addNote(captureAny()),
+        ).captured;
+        final capturedModel = captured.first as NoteModel;
 
-      test('calls data source with correct NoteModel', () async {
-        final expectedModel = NoteModel(
-          id: '1',
-          title: 'New Note',
-          content: 'New Content',
-          createdAt: now,
-          updatedAt: now,
-        );
-        when(
-          () => mockDataSource.addNote(any()),
-        ).thenAnswer((_) async => Future.value());
+        expect(capturedModel.id, generatedId);
+        expect(capturedModel.title, inputNote.title);
+        expect(capturedModel.content, inputNote.content);
 
-        await repository.addNote(testNote);
-
-        verify(() => mockDataSource.addNote(expectedModel)).called(1);
+        expect(result, equals(Result<Note, Failure>(capturedModel.toDomain())));
+        // removed duplicate verify of addNote (capturing already verifies the call)
+        verify(() => mockUuid.v4()).called(1);
       });
 
       test(
         'returns CacheFailure when data source throws CacheException',
         () async {
+          when(() => mockUuid.v4()).thenReturn('uuid-1');
           when(
             () => mockDataSource.addNote(any()),
           ).thenThrow(const CacheException('Failed to save note'));
 
-          final result = await repository.addNote(testNote);
+          final result = await repository.addNote(inputNote);
 
-          expect(result, isA<ResultFailure<void, Failure>>());
+          expect(result, isA<ResultFailure<Note, Failure>>());
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<CacheFailure>());
           expect(failure.message, 'Failed to save note');
           verify(() => mockDataSource.addNote(any())).called(1);
+          verify(() => mockUuid.v4()).called(1);
         },
       );
 
       test(
         'returns UnexpectedFailure when data source throws generic exception',
         () async {
+          when(() => mockUuid.v4()).thenReturn('uuid-1');
           when(
             () => mockDataSource.addNote(any()),
           ).thenThrow(Exception('Unexpected error'));
 
-          final result = await repository.addNote(testNote);
+          final result = await repository.addNote(inputNote);
 
-          expect(result, isA<ResultFailure<void, Failure>>());
+          expect(result, isA<ResultFailure<Note, Failure>>());
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<UnexpectedFailure>());
           expect(failure.message, contains('Exception'));
           verify(() => mockDataSource.addNote(any())).called(1);
+          verify(() => mockUuid.v4()).called(1);
         },
       );
     });
@@ -207,11 +195,21 @@ void main() {
         id: '1',
         title: 'Updated Note',
         content: 'Updated Content',
-        createdAt: now,
+        createdAt: now.subtract(const Duration(days: 1)),
         updatedAt: now,
       );
 
       test('returns success when note is updated successfully', () async {
+        final oldModel = NoteModel(
+          id: '1',
+          title: 'Old Title',
+          content: 'Old Content',
+          createdAt: now.subtract(const Duration(days: 2)),
+          updatedAt: now.subtract(const Duration(days: 1)),
+        );
+        when(
+          () => mockDataSource.getNote(any()),
+        ).thenAnswer((_) async => oldModel);
         when(
           () => mockDataSource.updateNote(any()),
         ).thenAnswer((_) async => Future.value());
@@ -219,31 +217,47 @@ void main() {
         final result = await repository.updateNote(testNote);
 
         expect(result, equals(const Result<void, Failure>(null)));
+        verify(() => mockDataSource.getNote(testNote.id!)).called(1);
         verify(() => mockDataSource.updateNote(any())).called(1);
       });
 
       test('calls data source with correct NoteModel', () async {
-        final expectedModel = NoteModel(
+        final oldModel = NoteModel(
           id: '1',
-          title: 'Updated Note',
-          content: 'Updated Content',
-          createdAt: now,
-          updatedAt: now,
+          title: 'Old Title',
+          content: 'Old Content',
+          createdAt: now.subtract(const Duration(days: 2)),
+          updatedAt: now.subtract(const Duration(days: 1)),
         );
+        when(
+          () => mockDataSource.getNote(any()),
+        ).thenAnswer((_) async => oldModel);
         when(
           () => mockDataSource.updateNote(any()),
         ).thenAnswer((_) async => Future.value());
 
         await repository.updateNote(testNote);
 
-        verify(() => mockDataSource.updateNote(expectedModel)).called(1);
+        final captured = verify(
+          () => mockDataSource.updateNote(captureAny()),
+        ).captured;
+        final updatedModel = captured.first as NoteModel;
+
+        expect(updatedModel.id, oldModel.id);
+        expect(updatedModel.title, testNote.title);
+        expect(updatedModel.content, testNote.content);
+        expect(updatedModel.createdAt, oldModel.createdAt);
+        expect(updatedModel.updatedAt.isAfter(oldModel.updatedAt), isTrue);
+
+        verify(() => mockDataSource.getNote(testNote.id!)).called(1);
+        // removed duplicate verify of updateNote (capturing already verifies the call)
       });
 
       test(
         'returns CacheFailure when data source throws CacheException',
         () async {
           when(
-            () => mockDataSource.updateNote(any()),
+            () => mockDataSource.getNote(any()),
           ).thenThrow(const CacheException('Failed to update note'));
 
           final result = await repository.updateNote(testNote);
@@ -252,7 +266,7 @@ void main() {
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<CacheFailure>());
           expect(failure.message, 'Failed to update note');
-          verify(() => mockDataSource.updateNote(any())).called(1);
+          verify(() => mockDataSource.getNote(any())).called(1);
         },
       );
 
@@ -260,7 +274,7 @@ void main() {
         'returns UnexpectedFailure when data source throws generic exception',
         () async {
           when(
-            () => mockDataSource.updateNote(any()),
+            () => mockDataSource.getNote(any()),
           ).thenThrow(Exception('Unexpected error'));
 
           final result = await repository.updateNote(testNote);
@@ -269,7 +283,7 @@ void main() {
           final failure = (result as ResultFailure).failure;
           expect(failure, isA<UnexpectedFailure>());
           expect(failure.message, contains('Exception'));
-          verify(() => mockDataSource.updateNote(any())).called(1);
+          verify(() => mockDataSource.getNote(any())).called(1);
         },
       );
     });
@@ -333,7 +347,6 @@ void main() {
       );
     });
 
-    //   search notes
     group('searchNotes', () {
       final testQuery = 'Test';
       final testModels = [
@@ -346,15 +359,7 @@ void main() {
         ),
       ];
 
-      final testNotes = [
-        Note(
-          id: '1',
-          title: 'Test Note 1',
-          content: 'Content 1',
-          createdAt: now,
-          updatedAt: now,
-        ),
-      ];
+      final testNotes = testModels.map((m) => m.toDomain()).toList();
 
       test(
         'returns success with mapped Note entities when call succeeds',
