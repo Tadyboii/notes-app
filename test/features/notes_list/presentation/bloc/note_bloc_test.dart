@@ -17,7 +17,7 @@ class MockSearchNotesUseCase extends Mock implements SearchNotesUseCase {}
 class MockDeleteNoteUseCase extends Mock implements DeleteNoteUseCase {}
 
 void main() {
-  late NoteBloc noteBloc;
+  late NoteListBloc noteBloc;
   late MockGetAllNotesUseCase mockGetAllNotesUseCase;
   late MockSearchNotesUseCase mockSearchNotesUseCase;
   late MockDeleteNoteUseCase mockDeleteNoteUseCase;
@@ -33,7 +33,7 @@ void main() {
     mockSearchNotesUseCase = MockSearchNotesUseCase();
     mockDeleteNoteUseCase = MockDeleteNoteUseCase();
 
-    noteBloc = NoteBloc(
+    noteBloc = NoteListBloc(
       mockGetAllNotesUseCase,
       mockSearchNotesUseCase,
       mockDeleteNoteUseCase,
@@ -58,7 +58,7 @@ void main() {
     });
 
     group('GetAllNotes', () {
-      blocTest<NoteBloc, NoteListState>(
+      blocTest<NoteListBloc, NoteListState>(
         'should emit [loading, success] when getAllNotes is successful',
         build: () {
           when(
@@ -76,7 +76,7 @@ void main() {
         },
       );
 
-      blocTest<NoteBloc, NoteListState>(
+      blocTest<NoteListBloc, NoteListState>(
         'should emit [loading, error] when getAllNotes fails',
         build: () {
           when(() => mockGetAllNotesUseCase(any())).thenAnswer(
@@ -103,7 +103,7 @@ void main() {
     group('DeleteNote', () {
       const tNoteId = '1';
 
-      blocTest<NoteBloc, NoteListState>(
+      blocTest<NoteListBloc, NoteListState>(
         'should call getAllNotes when deleteNote is successful',
         build: () {
           when(
@@ -125,7 +125,7 @@ void main() {
         },
       );
 
-      blocTest<NoteBloc, NoteListState>(
+      blocTest<NoteListBloc, NoteListState>(
         'should emit error when deleteNote fails',
         build: () {
           when(() => mockDeleteNoteUseCase(any())).thenAnswer(
@@ -155,7 +155,7 @@ void main() {
     group('SearchNotes', () {
       const tQuery = 'Test';
 
-      blocTest<NoteBloc, NoteListState>(
+      blocTest<NoteListBloc, NoteListState>(
         'should emit [loading, success] when searchNotes is successful',
         build: () {
           when(
@@ -173,7 +173,7 @@ void main() {
         },
       );
 
-      blocTest<NoteBloc, NoteListState>(
+      blocTest<NoteListBloc, NoteListState>(
         'should emit [loading, error] when searchNotes fails',
         build: () {
           when(() => mockSearchNotesUseCase(tQuery)).thenAnswer(

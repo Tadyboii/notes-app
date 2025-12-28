@@ -52,7 +52,7 @@ class _EditNoteViewState extends State<EditNoteView> {
           !prev.isSaved && curr.isSaved || prev.isDeleting != curr.isDeleting,
       listener: (context, state) async {
         if (state.isDeleting) {
-          context.read<NoteBloc>().add(
+          context.read<NoteListBloc>().add(
             NoteListEvent.deleteNote(state.noteId),
           );
           Navigator.of(context).pop();

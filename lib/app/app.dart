@@ -11,9 +11,9 @@ class NotesApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<NoteBloc>(
+        BlocProvider<NoteListBloc>(
           create: (_) =>
-              getIt<NoteBloc>()..add(const NoteListEvent.getAllNotes()),
+              getIt<NoteListBloc>()..add(const NoteListEvent.getAllNotes()),
         ),
       ],
       child: MaterialApp(

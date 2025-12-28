@@ -14,8 +14,8 @@ part 'note_list_event.dart';
 part 'note_list_state.dart';
 
 @injectable
-class NoteBloc extends Bloc<NoteListEvent, NoteListState> {
-  NoteBloc(
+class NoteListBloc extends Bloc<NoteListEvent, NoteListState> {
+  NoteListBloc(
     this.getAllNotesUseCase,
     this.searchNotesUseCase,
     this.deleteNoteUseCase,
