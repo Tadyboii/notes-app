@@ -113,6 +113,22 @@ class _EditNoteViewState extends State<EditNoteView> {
                   },
                 ),
               ],
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  final noteListState = context.read<NoteListBloc>().state;
+                  if (noteListState.query.isEmpty) {
+                    context.read<NoteListBloc>().add(
+                      const NoteListEvent.getAllNotes(),
+                    );
+                  } else {
+                    context.read<NoteListBloc>().add(
+                      NoteListEvent.searchNotes(noteListState.query),
+                    );
+                  }
+                  Navigator.of(context).pop();
+                },
+              ),
             ),
             body: Padding(
               padding: const EdgeInsetsGeometry.only(left: 32, right: 32),

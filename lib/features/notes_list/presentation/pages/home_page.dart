@@ -33,10 +33,15 @@ class _NoteListView extends StatelessWidget {
         ),
         body: Column(
           children: [
-            NoteSearchBarWidget(
-              onSearchChanged: (query) {
-                context.read<NoteListBloc>().add(
-                  NoteListEvent.searchNotes(query),
+            BlocBuilder<NoteListBloc, NoteListState>(
+              builder: (context, state) {
+                return NoteSearchBarWidget(
+                  query: state.query,
+                  onSearchChanged: (query) {
+                    context.read<NoteListBloc>().add(
+                      NoteListEvent.searchNotes(query),
+                    );
+                  },
                 );
               },
             ),
@@ -64,9 +69,15 @@ class _NoteListView extends StatelessWidget {
                   return RefreshIndicator(
                     color: Theme.of(context).colorScheme.primary,
                     onRefresh: () async {
-                      context.read<NoteListBloc>().add(
-                        const NoteListEvent.getAllNotes(),
-                      );
+                      if (state.query.isEmpty) {
+                        context.read<NoteListBloc>().add(
+                          const NoteListEvent.getAllNotes(),
+                        );
+                      } else {
+                        context.read<NoteListBloc>().add(
+                          NoteListEvent.searchNotes(state.query),
+                        );
+                      }
                     },
                     child: ListView.separated(
                       padding: const EdgeInsets.only(

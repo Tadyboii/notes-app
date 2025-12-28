@@ -52,7 +52,9 @@ class NoteListBloc extends Bloc<NoteListEvent, NoteListState> {
     _SearchNotes event,
     Emitter<NoteListState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, errorMessage: null));
+    emit(
+      state.copyWith(isLoading: true, errorMessage: null, query: event.query),
+    );
     final result = await searchNotesUseCase(event.query);
     switch (result) {
       case ResultSuccess<List<Note>, Failure>(:final value):
@@ -75,7 +77,13 @@ class NoteListBloc extends Bloc<NoteListEvent, NoteListState> {
     final result = await deleteNoteUseCase(event.id);
     switch (result) {
       case ResultSuccess<void, Failure>():
-        add(const NoteListEvent.getAllNotes());
+        if (state.query.isNotEmpty) {
+          add(NoteListEvent.searchNotes(state.query));
+          return;
+        } else {
+          add(const NoteListEvent.getAllNotes());
+          return;
+        }
       case ResultFailure<void, Failure>(:final failure):
         emit(state.copyWith(errorMessage: failure.message));
     }
