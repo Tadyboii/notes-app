@@ -1,30 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gap/gap.dart';
-import 'package:go_router/go_router.dart';
+import 'package:notes_app/core/di/injection_container.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
+import 'package:notes_app/features/notes_list/presentation/bloc/edit_note_bloc.dart';
 import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
 
-class EditNotePage extends StatefulWidget {
+class EditNotePage extends StatelessWidget {
   const EditNotePage({super.key, this.note});
 
   final Note? note;
 
   @override
-  State<EditNotePage> createState() => _EditNotePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => getIt<EditNoteBloc>(param1: note),
+      child: const EditNoteView(),
+    );
+  }
 }
 
-class _EditNotePageState extends State<EditNotePage> {
+class EditNoteView extends StatefulWidget {
+  const EditNoteView({super.key});
+
+  @override
+  State<EditNoteView> createState() => _EditNoteViewState();
+}
+
+class _EditNoteViewState extends State<EditNoteView> {
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.note?.title ?? '');
-    _contentController = TextEditingController(
-      text: widget.note?.content ?? '',
-    );
+    final state = context.read<EditNoteBloc>().state;
+    _titleController = TextEditingController(text: state.titleDraft);
+    _contentController = TextEditingController(text: state.contentDraft);
   }
 
   @override
@@ -34,81 +45,116 @@ class _EditNotePageState extends State<EditNotePage> {
     super.dispose();
   }
 
-  void _save() {
-    final title = _titleController.text.trim();
-    final content = _contentController.text.trim();
-
-    if (title.isEmpty && content.isEmpty) {
-      return;
-    }
-
-    if (widget.note != null) {
-      context.read<NoteBloc>().add(
-        NoteEvent.updateNote(
-          Note(
-            id: widget.note!.id,
-            title: title,
-            content: content,
-          ),
-        ),
-      );
-    } else {
-      context.read<NoteBloc>().add(
-        NoteEvent.addNote(
-          Note(
-            title: title,
-            content: content,
-          ),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            _save();
-            context.go('/');
-          },
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          children: [
-            TextField(
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              controller: _titleController,
-              decoration: const InputDecoration(
-                hintText: 'Title',
-                hintStyle: TextStyle(
-                  color: Colors.white24,
+    return BlocListener<EditNoteBloc, EditNoteState>(
+      listenWhen: (prev, curr) =>
+          !prev.isSaved && curr.isSaved || prev.isDeleting != curr.isDeleting,
+      listener: (context, state) async {
+        if (state.isDeleting) {
+          context.read<NoteBloc>().add(
+            NoteEvent.deleteNote(state.noteId),
+          );
+          Navigator.of(context).pop();
+        }
+        if (state.isSaved) {
+          if (state.isNewNote) {
+            context.read<EditNoteBloc>().add(
+              EditNoteEvent.addNote(
+                Note(
+                  title: state.titleDraft,
+                  content: state.contentDraft,
                 ),
-                border: InputBorder.none,
+              ),
+            );
+          } else {
+            context.read<EditNoteBloc>().add(
+              EditNoteEvent.updateNote(
+                Note(
+                  id: state.noteId,
+                  title: state.titleDraft,
+                  content: state.contentDraft,
+                ),
+              ),
+            );
+          }
+          context.read<EditNoteBloc>().add(
+            const EditNoteEvent.resetState(),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Note saved'),
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      },
+      child: BlocBuilder<EditNoteBloc, EditNoteState>(
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(state.isNewNote ? 'New Note' : 'Edit Note'),
+              actions: [
+                if (state.isEdited && !state.isEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.check),
+                    onPressed: () {
+                      context.read<EditNoteBloc>().add(
+                        const EditNoteEvent.saveNote(),
+                      );
+                    },
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    context.read<EditNoteBloc>().add(
+                      const EditNoteEvent.deleteNote(),
+                    );
+                  },
+                ),
+              ],
+            ),
+            body: Padding(
+              padding: const EdgeInsetsGeometry.only(left: 32, right: 32),
+              child: Column(
+                children: [
+                  TextField(
+                    style: const TextStyle(
+                      fontSize: 24,
+                    ),
+                    controller: _titleController,
+                    onChanged: (value) => context.read<EditNoteBloc>().add(
+                      EditNoteEvent.titleChanged(value),
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Title',
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.onInverseSurface,
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                    controller: _contentController,
+                    onChanged: (value) => context.read<EditNoteBloc>().add(
+                      EditNoteEvent.contentChanged(value),
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Start typing',
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.onInverseSurface,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const Gap(16),
-            TextField(
-              controller: _contentController,
-              decoration: const InputDecoration(
-                hintText: 'Start typing',
-                hintStyle: TextStyle(
-                  color: Colors.white24,
-                ),
-                border: InputBorder.none,
-                alignLabelWithHint: true,
-              ),
-              maxLines: 8,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

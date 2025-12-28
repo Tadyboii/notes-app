@@ -1,9 +1,10 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
-import 'package:go_router/go_router.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
+import 'package:notes_app/features/notes_list/presentation/pages/edit_note_page.dart';
 import 'package:notes_app/features/notes_list/presentation/widget/note_search_bar_widget.dart';
 import 'package:notes_app/features/notes_list/presentation/widget/note_tile_widget.dart';
 
@@ -16,49 +17,8 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _NoteListView extends StatefulWidget {
+class _NoteListView extends StatelessWidget {
   const _NoteListView();
-
-  @override
-  State<_NoteListView> createState() => _NoteListViewState();
-}
-
-class _NoteListViewState extends State<_NoteListView> {
-  String _searchQuery = '';
-  String _lastSearchQuery = '';
-  List<Note>? _lastNotes;
-  List<Note>? _lastFilteredNotes;
-
-  List<Note> _filterNotes(List<Note> notes) {
-    // Return cached results if the input list and query haven't changed.
-    if (identical(notes, _lastNotes) &&
-        _searchQuery == _lastSearchQuery &&
-        _lastFilteredNotes != null) {
-      return _lastFilteredNotes!;
-    }
-
-    if (_searchQuery.isEmpty) {
-      _lastNotes = notes;
-      _lastSearchQuery = _searchQuery;
-      _lastFilteredNotes = notes;
-      return notes;
-    }
-
-    final queryLower = _searchQuery.toLowerCase();
-    final filtered = notes.where((note) {
-      final titleLower = note.title.toLowerCase();
-      final contentLower = note.content.toLowerCase();
-      final titleMatch = titleLower.contains(queryLower);
-      final contentMatch = contentLower.contains(queryLower);
-      return titleMatch || contentMatch;
-    }).toList();
-
-    _lastNotes = notes;
-    _lastSearchQuery = _searchQuery;
-    _lastFilteredNotes = filtered;
-
-    return filtered;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,10 +34,10 @@ class _NoteListViewState extends State<_NoteListView> {
         body: Column(
           children: [
             NoteSearchBarWidget(
-              onSearchChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
+              onSearchChanged: (query) {
+                context.read<NoteBloc>().add(
+                  NoteEvent.searchNotes(query),
+                );
               },
             ),
             Expanded(
@@ -96,34 +56,10 @@ class _NoteListViewState extends State<_NoteListView> {
                     return Center(
                       child: Text(
                         'No notes available',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     );
                   }
-
-                  final filteredNotes = _filterNotes(state.notes);
-
-                  if (filteredNotes.isEmpty && _searchQuery.isNotEmpty) {
-                    return Center(
-                      child: Text(
-                        'No notes found',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                      ),
-                    );
-                  }
-
-                  final sortedNotes = List<Note>.from(filteredNotes)
-                    ..sort((a, b) => b.updatedAt!.compareTo(a.updatedAt!));
 
                   return RefreshIndicator(
                     color: Theme.of(context).colorScheme.primary,
@@ -138,15 +74,31 @@ class _NoteListViewState extends State<_NoteListView> {
                         right: 16,
                         bottom: 16,
                       ),
-                      itemCount: sortedNotes.length,
+                      itemCount: state.notes.length,
                       itemBuilder: (_, i) {
-                        final note = sortedNotes[i];
-                        return NoteTileWidget(
-                          note: note,
-                          onTap: () async {
-                            await context.push('/edit-note', extra: note);
+                        final note = state.notes[i];
+                        return OpenContainer(
+                          closedBuilder: (context, action) {
+                            return NoteTileWidget(
+                              note: note,
+                              onTap: action,
+                              onLongPress: () => _showDeleteMenu(context, note),
+                            );
                           },
-                          onLongPress: () => _showDeleteMenu(context, note),
+                          openBuilder: (context, action) {
+                            return EditNotePage(
+                              note: note,
+                            );
+                          },
+                          transitionDuration: const Duration(milliseconds: 500),
+                          transitionType: ContainerTransitionType.fadeThrough,
+                          closedElevation: 6,
+                          openElevation: 0,
+                          closedColor: Theme.of(
+                            context,
+                          ).colorScheme.surface,
+                          openColor: Theme.of(context).colorScheme.surface,
+                          middleColor: Theme.of(context).colorScheme.surface,
                         );
                       },
                       separatorBuilder: (_, _) => const Gap(6),
@@ -157,12 +109,26 @@ class _NoteListViewState extends State<_NoteListView> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            await context.push('/edit-note');
+        floatingActionButton: OpenContainer(
+          closedBuilder: (context, action) {
+            return FloatingActionButton(
+              onPressed: action,
+              shape: const CircleBorder(),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              child: const Icon(Icons.add),
+            );
           },
-          shape: const CircleBorder(),
-          child: const Icon(Icons.add),
+          openBuilder: (context, action) {
+            return const EditNotePage();
+          },
+          closedShape: const CircleBorder(),
+          transitionDuration: const Duration(milliseconds: 500),
+          transitionType: ContainerTransitionType.fadeThrough,
+          closedElevation: 0,
+          openElevation: 0,
+          closedColor: Theme.of(context).colorScheme.primary,
+          openColor: Theme.of(context).colorScheme.surface,
+          middleColor: Theme.of(context).colorScheme.surface,
         ),
       ),
     );
@@ -171,24 +137,27 @@ class _NoteListViewState extends State<_NoteListView> {
   Future<void> _showDeleteMenu(BuildContext context, Note note) async {
     await showModalBottomSheet<void>(
       context: context,
-      builder: (BuildContext ctx) {
+      builder: (BuildContext context) {
         return SafeArea(
           child: Wrap(
             children: [
               ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
+                leading: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
                   'Delete Note',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
                 onTap: () {
-                  Navigator.of(ctx).pop();
+                  Navigator.of(context).pop();
                   final noteId = note.id;
                   if (noteId == null) {
                     return;
                   }
                   context.read<NoteBloc>().add(
-                      NoteEvent.deleteNote(noteId),
+                    NoteEvent.deleteNote(noteId),
                   );
                 },
               ),
@@ -196,7 +165,7 @@ class _NoteListViewState extends State<_NoteListView> {
                 leading: const Icon(Icons.cancel),
                 title: const Text('Cancel'),
                 onTap: () {
-                  Navigator.of(ctx).pop();
+                  Navigator.of(context).pop();
                 },
               ),
             ],

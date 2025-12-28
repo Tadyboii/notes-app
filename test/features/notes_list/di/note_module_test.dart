@@ -46,7 +46,7 @@ void main() {
 
     test(
       'notesBox should return the same instance on multiple calls',
-          () async {
+      () async {
         final box1 = await noteModule.notesBox;
         final box2 = await noteModule.notesBox;
 

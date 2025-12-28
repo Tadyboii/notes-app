@@ -5,7 +5,9 @@ import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 abstract class INoteRepository {
   Future<Result<List<Note>, Failure>> getAllNotes();
 
-  Future<Result<void, Failure>> addNote(Note note);
+  Future<Result<List<Note>, Failure>> searchNotes(String query);
+
+  Future<Result<Note, Failure>> addNote(Note note);
 
   Future<Result<void, Failure>> updateNote(Note note);
 

@@ -3,17 +3,12 @@ import 'package:hive/hive.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:notes_app/features/notes_list/data/datasources/note_local_datasource_impl.dart';
 import 'package:notes_app/features/notes_list/data/models/note_model.dart';
-import 'package:uuid/uuid.dart';
 
-// Mock classes
 class MockBox extends Mock implements Box<NoteModel> {}
-
-class MockUuid extends Mock implements Uuid {}
 
 void main() {
   late NoteLocalDataSourceImpl dataSource;
   late MockBox mockBox;
-  late MockUuid mockUuid;
 
   setUpAll(() {
     registerFallbackValue(
@@ -29,39 +24,37 @@ void main() {
 
   setUp(() {
     mockBox = MockBox();
-    mockUuid = MockUuid();
     dataSource = NoteLocalDataSourceImpl(
       notesBox: mockBox,
-      uuid: mockUuid,
     );
   });
 
   group('NoteLocalDataSourceImpl', () {
     group('getAllNotes', () {
-      test('returns list of notes from Hive box', () async {
+      test('returns list of notes sorted by updatedAt descending', () async {
         final now = DateTime.now();
-        final testNotes = [
-          NoteModel(
-            id: '1',
-            title: 'Note 1',
-            content: 'Content 1',
-            createdAt: now.subtract(const Duration(days: 2)),
-            updatedAt: now.subtract(const Duration(days: 1)),
-          ),
-          NoteModel(
-            id: '2',
-            title: 'Note 2',
-            content: 'Content 2',
-            createdAt: now.subtract(const Duration(days: 1)),
-            updatedAt: now,
-          ),
-        ];
-        when(() => mockBox.values).thenReturn(testNotes);
+        final note1 = NoteModel(
+          id: '1',
+          title: 'Note 1',
+          content: 'Content 1',
+          createdAt: now.subtract(const Duration(days: 2)),
+          updatedAt: now.subtract(const Duration(days: 1)),
+        );
+        final note2 = NoteModel(
+          id: '2',
+          title: 'Note 2',
+          content: 'Content 2',
+          createdAt: now.subtract(const Duration(days: 1)),
+          updatedAt: now,
+        );
+
+        when(() => mockBox.values).thenReturn([note1, note2]);
 
         final result = await dataSource.getAllNotes();
 
-        expect(result, equals(testNotes));
         expect(result.length, 2);
+        expect(result[0].id, '2');
+        expect(result[1].id, '1');
         verify(() => mockBox.values).called(1);
       });
 
@@ -76,37 +69,23 @@ void main() {
     });
 
     group('addNote', () {
-      test('adds note with generated UUID and timestamps', () async {
+      test('adds note using provided id and timestamps', () async {
         final now = DateTime.now();
-        const generatedId = 'uuid-1234';
         final testNote = NoteModel(
-          id: '',
+          id: 'note-1',
           title: 'New Note',
           content: 'New Content',
           createdAt: now,
           updatedAt: now,
         );
 
-        // Use the specific type parameters for put
-        when(() => mockUuid.v4()).thenReturn(generatedId);
         when(
-          () => mockBox.put(any<String>(), any<NoteModel>()),
+              () => mockBox.put(any<String>(), any<NoteModel>()),
         ).thenAnswer((_) async {});
 
         await dataSource.addNote(testNote);
 
-        final capturedNote =
-            verify(
-                  () => mockBox.put(
-                    captureAny<String>(),
-                    captureAny<NoteModel>(),
-                  ),
-                ).captured.single
-                as NoteModel;
-
-        expect(capturedNote.id, generatedId);
-        expect(capturedNote.createdAt, now);
-        expect(capturedNote.updatedAt, now);
+        verify(() => mockBox.put(testNote.id, testNote)).called(1);
       });
     });
 
@@ -121,9 +100,8 @@ void main() {
           updatedAt: now,
         );
 
-        // Use the specific type parameters for put
         when(
-          () => mockBox.put(any<String>(), any<NoteModel>()),
+              () => mockBox.put(any<String>(), any<NoteModel>()),
         ).thenAnswer((_) async {});
 
         await dataSource.updateNote(testNote);
@@ -140,6 +118,62 @@ void main() {
         await dataSource.deleteNote(noteId);
 
         verify(() => mockBox.delete(noteId)).called(1);
+      });
+    });
+
+    group('searchNotes', () {
+      test(
+        'returns list of notes matching query sorted by updatedAt descending',
+            () async {
+          final now = DateTime.now();
+          final note1 = NoteModel(
+            id: '1',
+            title: 'Shopping List',
+            content: 'Buy milk and eggs',
+            createdAt: now.subtract(const Duration(days: 2)),
+            updatedAt: now.subtract(const Duration(days: 1)),
+          );
+          final note2 = NoteModel(
+            id: '2',
+            title: 'Work Tasks',
+            content: 'Finish the report',
+            createdAt: now.subtract(const Duration(days: 1)),
+            updatedAt: now,
+          );
+
+          when(() => mockBox.values).thenReturn([note1, note2]);
+
+          final result = await dataSource.searchNotes('milk');
+
+          expect(result.length, 1);
+          expect(result[0].id, '1');
+          verify(() => mockBox.values).called(1);
+        },
+      );
+
+      test('returns empty list when no notes match query', () async {
+        final now = DateTime.now();
+        final note1 = NoteModel(
+          id: '1',
+          title: 'Shopping List',
+          content: 'Buy milk and eggs',
+          createdAt: now.subtract(const Duration(days: 2)),
+          updatedAt: now.subtract(const Duration(days: 1)),
+        );
+        final note2 = NoteModel(
+          id: '2',
+          title: 'Work Tasks',
+          content: 'Finish the report',
+          createdAt: now.subtract(const Duration(days: 1)),
+          updatedAt: now,
+        );
+
+        when(() => mockBox.values).thenReturn([note1, note2]);
+
+        final result = await dataSource.searchNotes('gym');
+
+        expect(result, isEmpty);
+        verify(() => mockBox.values).called(1);
       });
     });
   });

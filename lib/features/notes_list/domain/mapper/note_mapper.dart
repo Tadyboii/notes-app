@@ -12,15 +12,3 @@ extension NoteMapper on NoteModel {
     );
   }
 }
-
-extension NoteModelMapper on Note {
-  NoteModel toModel() {
-    return NoteModel(
-      id: id ?? '',
-      title: title,
-      content: content,
-      createdAt: createdAt ?? DateTime.now(),
-      updatedAt: updatedAt ?? DateTime.now(),
-    );
-  }
-}

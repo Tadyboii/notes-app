@@ -14,11 +14,14 @@ void main() {
   late MockNoteRepository mockRepository;
 
   setUpAll(() {
-    // Register fallback value for Note type
+    // Fallback value required by mocktail for Note typed any()
     registerFallbackValue(
-      const Note(
+      Note(
+        id: null,
         title: '',
         content: '',
+        createdAt: null,
+        updatedAt: null,
       ),
     );
   });
@@ -30,137 +33,139 @@ void main() {
 
   group('AddNoteUseCase', () {
     group('call', () {
-      const testNote = Note(
+      final inputNote = Note(
+        id: null,
         title: 'Test Note',
         content: 'Test Content',
+        createdAt: null,
+        updatedAt: null,
       );
 
-      test(
-        'returns success when note is added successfully',
-        () async {
-          // Arrange
-          when(
-            () => mockRepository.addNote(any()),
-          ).thenAnswer((_) async => const Result(null));
-
-          // Act
-          final result = await useCase.call(testNote);
-
-          // Assert
-          expect(result, equals(const Result<void, Failure>(null)));
-          verify(() => mockRepository.addNote(testNote)).called(1);
-        },
+      final returnedNote = Note(
+        id: '1',
+        title: 'Test Note',
+        content: 'Test Content',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
-      test('returns success when adding note with empty content', () async {
-        // Arrange
-        const noteWithEmptyContent = Note(
-          title: 'Title Only',
-          content: '',
-        );
+      test('returns success when note is added successfully', () async {
         when(
           () => mockRepository.addNote(any()),
-        ).thenAnswer((_) async => const Result(null));
+        ).thenAnswer((_) async => Result<Note, Failure>(returnedNote));
 
-        // Act
+        final result = await useCase.call(inputNote);
+
+        expect(result, equals(Result<Note, Failure>(returnedNote)));
+        verify(() => mockRepository.addNote(inputNote)).called(1);
+      });
+
+      test('returns success when adding note with empty content', () async {
+        final noteWithEmptyContent = Note(
+          id: null,
+          title: 'Title Only',
+          content: '',
+          createdAt: null,
+          updatedAt: null,
+        );
+
+        final returned = Note(
+          id: '2',
+          title: 'Title Only',
+          content: '',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+
+        when(
+          () => mockRepository.addNote(any()),
+        ).thenAnswer((_) async => Result<Note, Failure>(returned));
+
         final result = await useCase.call(noteWithEmptyContent);
 
-        // Assert
-        expect(result, equals(const Result<void, Failure>(null)));
+        expect(result, equals(Result<Note, Failure>(returned)));
         verify(() => mockRepository.addNote(noteWithEmptyContent)).called(1);
       });
 
       test('returns success when adding note with empty title', () async {
-        // Arrange
-        const noteWithEmptyTitle = Note(
+        final noteWithEmptyTitle = Note(
+          id: null,
           title: '',
           content: 'Content Only',
+          createdAt: null,
+          updatedAt: null,
         );
+
+        final returned = Note(
+          id: '3',
+          title: '',
+          content: 'Content Only',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+
         when(
           () => mockRepository.addNote(any()),
-        ).thenAnswer((_) async => const Result(null));
+        ).thenAnswer((_) async => Result<Note, Failure>(returned));
 
-        // Act
         final result = await useCase.call(noteWithEmptyTitle);
 
-        // Assert
-        expect(result, equals(const Result<void, Failure>(null)));
+        expect(result, equals(Result<Note, Failure>(returned)));
         verify(() => mockRepository.addNote(noteWithEmptyTitle)).called(1);
       });
 
-      test('returns failure when repository call fails', () async {
-        // Arrange
-        const failure = ServerFailure(message: 'Failed to add note');
-        when(
-          () => mockRepository.addNote(any()),
-        ).thenAnswer((_) async => const Result.failure(failure));
+      test(
+        'returns ServerFailure when repository returns ServerFailure',
+        () async {
+          const failure = ServerFailure(message: 'Failed to add note');
+          when(
+            () => mockRepository.addNote(any()),
+          ).thenAnswer((_) async => const Result.failure(failure));
 
-        // Act
-        final result = await useCase.call(testNote);
+          final result = await useCase.call(inputNote);
 
-        // Assert
-        expect(
-          result,
-          equals(const ResultFailure<void, Failure>(failure)),
-        );
-        verify(() => mockRepository.addNote(testNote)).called(1);
-      });
+          expect(result, equals(const ResultFailure<Note, Failure>(failure)));
+          verify(() => mockRepository.addNote(inputNote)).called(1);
+        },
+      );
 
       test('returns CacheFailure when local storage fails', () async {
-        // Arrange
         const failure = CacheFailure(message: 'Failed to save note locally');
         when(
           () => mockRepository.addNote(any()),
         ).thenAnswer((_) async => const Result.failure(failure));
 
-        // Act
-        final result = await useCase.call(testNote);
+        final result = await useCase.call(inputNote);
 
-        // Assert
-        expect(
-          result,
-          equals(const ResultFailure<void, Failure>(failure)),
-        );
-        verify(() => mockRepository.addNote(testNote)).called(1);
+        expect(result, equals(const ResultFailure<Note, Failure>(failure)));
+        verify(() => mockRepository.addNote(inputNote)).called(1);
       });
 
       test(
         'returns NetworkFailure when there is no internet connection',
         () async {
-          // Arrange
           const failure = NetworkFailure(message: 'No internet connection');
           when(
             () => mockRepository.addNote(any()),
           ).thenAnswer((_) async => const Result.failure(failure));
 
-          // Act
-          final result = await useCase.call(testNote);
+          final result = await useCase.call(inputNote);
 
-          // Assert
-          expect(
-            result,
-            equals(const ResultFailure<void, Failure>(failure)),
-          );
-          verify(() => mockRepository.addNote(testNote)).called(1);
+          expect(result, equals(const ResultFailure<Note, Failure>(failure)));
+          verify(() => mockRepository.addNote(inputNote)).called(1);
         },
       );
 
       test('returns UnexpectedFailure when unexpected error occurs', () async {
-        // Arrange
         const failure = UnexpectedFailure(message: 'Unexpected error');
         when(
           () => mockRepository.addNote(any()),
         ).thenAnswer((_) async => const Result.failure(failure));
 
-        // Act
-        final result = await useCase.call(testNote);
+        final result = await useCase.call(inputNote);
 
-        // Assert
-        expect(
-          result,
-          equals(const ResultFailure<void, Failure>(failure)),
-        );
-        verify(() => mockRepository.addNote(testNote)).called(1);
+        expect(result, equals(const ResultFailure<Note, Failure>(failure)));
+        verify(() => mockRepository.addNote(inputNote)).called(1);
       });
     });
   });
