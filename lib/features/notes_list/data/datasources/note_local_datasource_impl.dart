@@ -1,15 +1,14 @@
 import 'package:hive/hive.dart';
 import 'package:injectable/injectable.dart';
+import 'package:notes_app/core/error/exceptions.dart';
 import 'package:notes_app/features/notes_list/data/datasources/note_local_datasource.dart';
 import 'package:notes_app/features/notes_list/data/models/note_model.dart';
-import 'package:uuid/uuid.dart';
 
 @Singleton(as: NoteLocalDataSource)
 class NoteLocalDataSourceImpl extends NoteLocalDataSource {
-  NoteLocalDataSourceImpl({required this.notesBox, required this.uuid});
+  NoteLocalDataSourceImpl({required this.notesBox});
 
   final Box<NoteModel> notesBox;
-  final Uuid uuid;
 
   @override
   Future<List<NoteModel>> getAllNotes() async {
@@ -34,9 +33,7 @@ class NoteLocalDataSourceImpl extends NoteLocalDataSource {
 
   @override
   Future<void> addNote(NoteModel note) async {
-    final id = uuid.v4();
-    final noteWithId = note.copyWith(id: id);
-    await notesBox.put(id, noteWithId);
+    await notesBox.put(note.id, note);
   }
 
   @override
@@ -47,5 +44,14 @@ class NoteLocalDataSourceImpl extends NoteLocalDataSource {
   @override
   Future<void> updateNote(NoteModel note) {
     return notesBox.put(note.id, note);
+  }
+
+  @override
+  Future<NoteModel> getNote(String id) async {
+    final note = notesBox.get(id);
+    if (note == null) {
+      throw const CacheException('Note not found');
+    }
+    return note;
   }
 }

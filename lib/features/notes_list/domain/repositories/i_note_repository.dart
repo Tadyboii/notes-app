@@ -7,7 +7,7 @@ abstract class INoteRepository {
 
   Future<Result<List<Note>, Failure>> searchNotes(String query);
 
-  Future<Result<void, Failure>> addNote(Note note);
+  Future<Result<Note, Failure>> addNote(Note note);
 
   Future<Result<void, Failure>> updateNote(Note note);
 

@@ -10,4 +10,6 @@ abstract class NoteLocalDataSource {
   Future<void> updateNote(NoteModel note);
 
   Future<void> deleteNote(String id);
+
+  Future<NoteModel> getNote(String id);
 }
