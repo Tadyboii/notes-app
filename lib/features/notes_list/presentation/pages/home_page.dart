@@ -115,7 +115,6 @@ class _NoteListView extends StatelessWidget {
               onPressed: action,
               shape: const CircleBorder(),
               backgroundColor: Theme.of(context).colorScheme.primary,
-              elevation: 0,
               child: const Icon(Icons.add),
             );
           },
