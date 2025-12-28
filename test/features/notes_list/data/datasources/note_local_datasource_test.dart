@@ -80,7 +80,7 @@ void main() {
         );
 
         when(
-              () => mockBox.put(any<String>(), any<NoteModel>()),
+          () => mockBox.put(any<String>(), any<NoteModel>()),
         ).thenAnswer((_) async {});
 
         await dataSource.addNote(testNote);
@@ -101,7 +101,7 @@ void main() {
         );
 
         when(
-              () => mockBox.put(any<String>(), any<NoteModel>()),
+          () => mockBox.put(any<String>(), any<NoteModel>()),
         ).thenAnswer((_) async {});
 
         await dataSource.updateNote(testNote);
@@ -124,7 +124,7 @@ void main() {
     group('searchNotes', () {
       test(
         'returns list of notes matching query sorted by updatedAt descending',
-            () async {
+        () async {
           final now = DateTime.now();
           final note1 = NoteModel(
             id: '1',

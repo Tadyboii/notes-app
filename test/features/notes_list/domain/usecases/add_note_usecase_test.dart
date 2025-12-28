@@ -16,12 +16,9 @@ void main() {
   setUpAll(() {
     // Fallback value required by mocktail for Note typed any()
     registerFallbackValue(
-      Note(
-        id: null,
+      const Note(
         title: '',
         content: '',
-        createdAt: null,
-        updatedAt: null,
       ),
     );
   });
@@ -33,12 +30,9 @@ void main() {
 
   group('AddNoteUseCase', () {
     group('call', () {
-      final inputNote = Note(
-        id: null,
+      const inputNote = Note(
         title: 'Test Note',
         content: 'Test Content',
-        createdAt: null,
-        updatedAt: null,
       );
 
       final returnedNote = Note(
@@ -61,12 +55,9 @@ void main() {
       });
 
       test('returns success when adding note with empty content', () async {
-        final noteWithEmptyContent = Note(
-          id: null,
+        const noteWithEmptyContent = Note(
           title: 'Title Only',
           content: '',
-          createdAt: null,
-          updatedAt: null,
         );
 
         final returned = Note(
@@ -88,12 +79,9 @@ void main() {
       });
 
       test('returns success when adding note with empty title', () async {
-        final noteWithEmptyTitle = Note(
-          id: null,
+        const noteWithEmptyTitle = Note(
           title: '',
           content: 'Content Only',
-          createdAt: null,
-          updatedAt: null,
         );
 
         final returned = Note(
