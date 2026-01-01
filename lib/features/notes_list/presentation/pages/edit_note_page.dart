@@ -64,7 +64,7 @@ class _EditNoteViewState extends State<EditNoteView> {
                 ),
                 TextButton(
                   onPressed: () {
-                    dialogContext.read<NoteListBloc>().add(
+                    context.read<NoteListBloc>().add(
                       NoteListEvent.deleteNote(state.noteId),
                     );
                     Navigator.of(dialogContext).pop();

@@ -30,6 +30,15 @@ class _NoteSearchBarWidgetState extends State<NoteSearchBarWidget> {
   }
 
   @override
+  void didUpdateWidget(NoteSearchBarWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.query != widget.query &&
+        _searchController.text != widget.query) {
+      _searchController.text = widget.query;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
