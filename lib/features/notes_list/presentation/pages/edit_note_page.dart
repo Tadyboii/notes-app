@@ -149,6 +149,8 @@ class _EditNoteViewState extends State<EditNoteView> {
                         color: Theme.of(context).colorScheme.onInverseSurface,
                       ),
                     ),
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
                   ),
                   TextField(
                     style: const TextStyle(
@@ -165,6 +167,8 @@ class _EditNoteViewState extends State<EditNoteView> {
                         color: Theme.of(context).colorScheme.onInverseSurface,
                       ),
                     ),
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
                   ),
                 ],
               ),
