@@ -75,7 +75,9 @@ class _EditNoteViewState extends State<EditNoteView> {
               ],
             ),
           );
+          return;
         }
+
         if (state.isSaved) {
           if (state.isNewNote) {
             context.read<EditNoteBloc>().add(
