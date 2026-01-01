@@ -147,7 +147,6 @@ void main() {
         expect(capturedModel.content, inputNote.content);
 
         expect(result, equals(Result<Note, Failure>(capturedModel.toDomain())));
-        // removed duplicate verify of addNote (capturing already verifies the call)
         verify(() => mockUuid.v4()).called(1);
       });
 
@@ -250,7 +249,6 @@ void main() {
         expect(updatedModel.updatedAt.isAfter(oldModel.updatedAt), isTrue);
 
         verify(() => mockDataSource.getNote(testNote.id!)).called(1);
-        // removed duplicate verify of updateNote (capturing already verifies the call)
       });
 
       test(
@@ -348,7 +346,7 @@ void main() {
     });
 
     group('searchNotes', () {
-      final testQuery = 'Test';
+      const testQuery = 'Test';
       final testModels = [
         NoteModel(
           id: '1',

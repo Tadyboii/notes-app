@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notes_app/core/di/injection_container.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
 import 'package:notes_app/features/notes_list/presentation/bloc/edit_note_bloc.dart';
-import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
+import 'package:notes_app/features/notes_list/presentation/bloc/note_list_bloc.dart';
 
 class EditNotePage extends StatelessWidget {
   const EditNotePage({super.key, this.note});
@@ -52,11 +52,32 @@ class _EditNoteViewState extends State<EditNoteView> {
           !prev.isSaved && curr.isSaved || prev.isDeleting != curr.isDeleting,
       listener: (context, state) async {
         if (state.isDeleting) {
-          context.read<NoteBloc>().add(
-            NoteEvent.deleteNote(state.noteId),
+          await showDialog<void>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text('Delete note'),
+              content: const Text('Are you sure you want to delete this?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    context.read<NoteListBloc>().add(
+                      NoteListEvent.deleteNote(state.noteId),
+                    );
+                    Navigator.of(dialogContext).pop();
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Delete'),
+                ),
+              ],
+            ),
           );
-          Navigator.of(context).pop();
+          return;
         }
+
         if (state.isSaved) {
           if (state.isNewNote) {
             context.read<EditNoteBloc>().add(
@@ -113,6 +134,22 @@ class _EditNoteViewState extends State<EditNoteView> {
                   },
                 ),
               ],
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  final noteListState = context.read<NoteListBloc>().state;
+                  if (noteListState.query.isEmpty) {
+                    context.read<NoteListBloc>().add(
+                      const NoteListEvent.getAllNotes(),
+                    );
+                  } else {
+                    context.read<NoteListBloc>().add(
+                      NoteListEvent.searchNotes(noteListState.query),
+                    );
+                  }
+                  Navigator.of(context).pop();
+                },
+              ),
             ),
             body: Padding(
               padding: const EdgeInsetsGeometry.only(left: 32, right: 32),
@@ -133,6 +170,8 @@ class _EditNoteViewState extends State<EditNoteView> {
                         color: Theme.of(context).colorScheme.onInverseSurface,
                       ),
                     ),
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
                   ),
                   TextField(
                     style: const TextStyle(
@@ -149,6 +188,8 @@ class _EditNoteViewState extends State<EditNoteView> {
                         color: Theme.of(context).colorScheme.onInverseSurface,
                       ),
                     ),
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
                   ),
                 ],
               ),

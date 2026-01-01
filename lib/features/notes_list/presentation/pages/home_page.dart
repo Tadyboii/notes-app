@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:notes_app/features/notes_list/domain/entities/note.dart';
-import 'package:notes_app/features/notes_list/presentation/bloc/note_bloc.dart';
+import 'package:notes_app/features/notes_list/presentation/bloc/note_list_bloc.dart';
 import 'package:notes_app/features/notes_list/presentation/pages/edit_note_page.dart';
 import 'package:notes_app/features/notes_list/presentation/widget/note_search_bar_widget.dart';
 import 'package:notes_app/features/notes_list/presentation/widget/note_tile_widget.dart';
@@ -33,15 +33,20 @@ class _NoteListView extends StatelessWidget {
         ),
         body: Column(
           children: [
-            NoteSearchBarWidget(
-              onSearchChanged: (query) {
-                context.read<NoteBloc>().add(
-                  NoteEvent.searchNotes(query),
+            BlocBuilder<NoteListBloc, NoteListState>(
+              builder: (context, state) {
+                return NoteSearchBarWidget(
+                  query: state.query,
+                  onSearchChanged: (query) {
+                    context.read<NoteListBloc>().add(
+                      NoteListEvent.searchNotes(query),
+                    );
+                  },
                 );
               },
             ),
             Expanded(
-              child: BlocBuilder<NoteBloc, NoteState>(
+              child: BlocBuilder<NoteListBloc, NoteListState>(
                 builder: (context, state) {
                   if (state.errorMessage != null) {
                     return Center(
@@ -64,9 +69,15 @@ class _NoteListView extends StatelessWidget {
                   return RefreshIndicator(
                     color: Theme.of(context).colorScheme.primary,
                     onRefresh: () async {
-                      context.read<NoteBloc>().add(
-                        const NoteEvent.getAllNotes(),
-                      );
+                      if (state.query.isEmpty) {
+                        context.read<NoteListBloc>().add(
+                          const NoteListEvent.getAllNotes(),
+                        );
+                      } else {
+                        context.read<NoteListBloc>().add(
+                          NoteListEvent.searchNotes(state.query),
+                        );
+                      }
                     },
                     child: ListView.separated(
                       padding: const EdgeInsets.only(
@@ -156,8 +167,8 @@ class _NoteListView extends StatelessWidget {
                   if (noteId == null) {
                     return;
                   }
-                  context.read<NoteBloc>().add(
-                    NoteEvent.deleteNote(noteId),
+                  context.read<NoteListBloc>().add(
+                    NoteListEvent.deleteNote(noteId),
                   );
                 },
               ),

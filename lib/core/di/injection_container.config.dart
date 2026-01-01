@@ -37,7 +37,8 @@ import '../../features/notes_list/domain/usecases/update_note_usecase.dart'
     as _i201;
 import '../../features/notes_list/presentation/bloc/edit_note_bloc.dart'
     as _i513;
-import '../../features/notes_list/presentation/bloc/note_bloc.dart' as _i851;
+import '../../features/notes_list/presentation/bloc/note_list_bloc.dart'
+    as _i665;
 import 'core_module.dart' as _i154;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -83,7 +84,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i194.AddNoteUseCase>(),
           gh<_i201.UpdateNoteUseCase>(),
         ));
-    gh.factory<_i851.NoteBloc>(() => _i851.NoteBloc(
+    gh.factory<_i665.NoteListBloc>(() => _i665.NoteListBloc(
           gh<_i238.GetAllNotesUseCase>(),
           gh<_i659.SearchNotesUseCase>(),
           gh<_i616.DeleteNoteUseCase>(),
