@@ -98,7 +98,7 @@ For Web:
 flutter build web --target lib/main_development.dart
 ```
 ## Project Structure
-
+```text
 lib/
 ├── app/              # App configuration and routing
 ├── core/             # Core utilities and dependency injection
@@ -109,7 +109,7 @@ lib/
 │       ├── domain/  # Entities and use cases
 │       └── presentation/ # UI and BLoC
 └── main_development.dart # Development entry point
-
+```
 ## Code Generation
 
 When you modify Freezed or Injectable annotations, run:
