@@ -52,10 +52,29 @@ class _EditNoteViewState extends State<EditNoteView> {
           !prev.isSaved && curr.isSaved || prev.isDeleting != curr.isDeleting,
       listener: (context, state) async {
         if (state.isDeleting) {
-          context.read<NoteListBloc>().add(
-            NoteListEvent.deleteNote(state.noteId),
+          await showDialog<void>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text('Delete note'),
+              content: const Text('Are you sure you want to delete this?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    dialogContext.read<NoteListBloc>().add(
+                      NoteListEvent.deleteNote(state.noteId),
+                    );
+                    Navigator.of(dialogContext).pop();
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Delete'),
+                ),
+              ],
+            ),
           );
-          Navigator.of(context).pop();
         }
         if (state.isSaved) {
           if (state.isNewNote) {
